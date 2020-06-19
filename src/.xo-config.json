@@ -1,0 +1,19 @@
+{
+  "rules": {
+    "object-curly-spacing": "off",
+    "operator-linebreak": [
+      "error",
+      "before"
+    ]
+  },
+  "overrides": [
+    {
+      "files": [
+        "**.test.js"
+      ],
+      "rules": {
+        "camelcase": "off"
+      }
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "name": "update-course-action",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "xo -v && ava -v"
+  },
+  "dependencies": {
+    "node-fetch": "^2.6.0"
+  },
+  "devDependencies": {
+    "ava": "^3.9.0",
+    "fetch-mock": "^9.10.1",
+    "xo": "^0.32.0"
+  }
+}
