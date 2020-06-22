@@ -9331,11 +9331,13 @@ module.exports = eval("require")("./valence-auth");
 
 const core = __webpack_require__(330);
 const github = __webpack_require__(350);
+
 const Content = __webpack_require__(828);
 
 async function run() {
 	const inputDir = core.getInput('inputDirectory');
 	const content = new Content(inputDir);
+	console.log(github.context.payload);
 	content.readManifest();
 }
 
