@@ -1,12 +1,15 @@
 {
+  "$schema": "../../../manifest_schema_v1_0.json",
   "modules": [
     {
       "title": "Test Module",
+      "type": "module",
       "descriptionFileName": "test-module/index.md",
       "dueDate": "2020-01-01T00:00:00.000Z",
-      "topics": [
+      "children": [
         {
           "title": "Test Topic",
+          "type": "topic",
           "fileName": "test-module/test-topic.md",
           "isRequired": false
         }
