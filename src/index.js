@@ -1,6 +1,7 @@
 'use strict';
 
 const core = require('@actions/core');
+const github = require('@actions/github');
 const Content = require('./valence-auth');
 
 async function run() {

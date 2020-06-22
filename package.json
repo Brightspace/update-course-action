@@ -15,5 +15,17 @@
     "ava": "^3.9.0",
     "fetch-mock": "^9.10.1",
     "xo": "^0.32.0"
-  }
+  },
+  "description": "Updates the course content of a Brightspace course",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Brightspace/update-course-action.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Brightspace/update-course-action/issues"
+  },
+  "homepage": "https://github.com/Brightspace/update-course-action#readme"
 }
