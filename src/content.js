@@ -20,6 +20,7 @@ module.exports = class Content {
 	async readManifest() {
 		const manifestPath = path.join(this._rootPath, 'manifest.json');
 		const manifest = await fs.readFile(manifestPath, 'utf8');
+		console.log(manifestPath);
 		this._validateManifest(manifest);
 		return manifest;
 	}

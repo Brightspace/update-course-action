@@ -10,7 +10,7 @@ inputs:
   valenceUserId:
     description: 'The UserId to authenticate as'
     required: true
-  valenceAppId:
+  valenceUserKey:
     description: 'The UserKey to authenticate against Brightspace Valence APIs'
     required: true
   instanceDomain:
