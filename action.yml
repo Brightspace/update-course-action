@@ -1,0 +1,30 @@
+name: 'Update'
+description: 'Update the content in the Brightspace course'
+inputs:
+  valenceAppId:
+    description: 'The AppId to authenticate with Brightspace Valence APIs'
+    required: true
+  valenceAppKey:
+    description: 'The AppKey to authenticate with Brightspace Valence APIs'
+    required: true
+  valenceUserId:
+    description: 'The UserId to authenticate as'
+    required: true
+  valenceAppId:
+    description: 'The UserKey to authenticate against Brightspace Valence APIs'
+    required: true
+  instanceDomain:
+    description: 'The domain of the Brightspace instance being updated. (i.e. spark.d2l.com)'
+    required: true
+  courseOrgUnitId:
+    description: 'The OrgUnitId of the course to be updated'
+    required: true
+  inputDirectory:
+    description: 'The path containing the manifest and files to be uploaded to the course'
+    required: true
+outputs:
+  time:
+    description: 'The message to output'
+runs:
+  using: 'node12'
+  main: 'src/index.js'
