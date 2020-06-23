@@ -32,10 +32,13 @@
           "items": {
             "anyOf": [
               {
-                "$ref": "#/definitions/topic"
+                "$ref": "#/definitions/module"
               },
               {
-                "$ref": "#/definitions/module"
+                "$ref": "#/definitions/resource"
+              },
+              {
+                "$ref": "#/definitions/topic"
               }
             ]
           }
@@ -45,6 +48,26 @@
         "title",
         "type",
         "children"
+      ]
+    },
+    "resource": {
+      "type": "object",
+      "additionalItems": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "resource"
+          ]
+        },
+        "fileName": {
+          "type": "string",
+          "title": "The fileName of the resource"
+        }
+      },
+      "required": [
+        "type",
+        "fileName"
       ]
     },
     "topic": {

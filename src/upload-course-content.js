@@ -60,6 +60,9 @@ module.exports = class UploadCourseContent {
 			if (child.type === 'topic') {
 				// eslint-disable-next-line no-await-in-loop
 				await this._processTopic(instanceUrl, orgUnit, child, self);
+			} else if (child.type === 'resource') {
+				// eslint-disable-next-line no-await-in-loop
+				await this._processResource(instanceUrl, orgUnit, child, self);
 			} else {
 				// eslint-disable-next-line no-await-in-loop
 				await this._processModule(instanceUrl, orgUnit, child, self);
@@ -67,16 +70,26 @@ module.exports = class UploadCourseContent {
 		}
 	}
 
-	async _processTopic(instanceUrl, orgUnit, topic, parentModule) {
+	async _processResource(instanceUrl, orgUnit, resource, parentModule) {
+		const topic = {
+			...resource,
+			...{
+				title: resource.fileName
+			}
+		};
+		return this._processTopic(instanceUrl, orgUnit, topic, parentModule, true);
+	}
+
+	async _processTopic(instanceUrl, orgUnit, topic, parentModule, isHidden = false) {
 		const topics = await this._getContent(instanceUrl, orgUnit, parentModule);
-		const self = Array.isArray(topics) && topics.find(t => t.Type === 1 && t.Title === topic.title);
+		const self = Array.isArray(topics) && topics.find(t => t.Type === 1 && t.TopicType === 1 && t.Title === topic.title);
 
 		if (self) {
-			await this._updateTopic(instanceUrl, orgUnit, topic, self);
+			await this._updateTopic(instanceUrl, orgUnit, topic, self, isHidden);
 			return self;
 		}
 
-		return this._createTopic(instanceUrl, orgUnit, topic, parentModule);
+		return this._createTopic(instanceUrl, orgUnit, topic, parentModule, isHidden);
 	}
 
 	async _createModule(instanceUrl, orgUnit, module, parentModule) {
@@ -87,8 +100,6 @@ module.exports = class UploadCourseContent {
 
 		const descriptionFileName = module.descriptionFileName.replace(this._markdownRegex, '.html');
 		const description = await fs.promises.readFile(`${this._contentPath}/${descriptionFileName}`);
-
-		// TODO: loose files
 
 		const response = await this._fetch(
 			signedUrl,
@@ -112,7 +123,7 @@ module.exports = class UploadCourseContent {
 		return response.json();
 	}
 
-	async _createTopic(instanceUrl, orgUnit, topic, parentModule) {
+	async _createTopic(instanceUrl, orgUnit, topic, parentModule, isHidden = false) {
 		const url = new URL(`/d2l/api/le/1.34/${orgUnit.Id}/content/modules/${parentModule.Id}/structure/`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'POST');
 
@@ -131,7 +142,7 @@ module.exports = class UploadCourseContent {
 				EndDate: null,
 				DueDate: topic.dueDate || null,
 				Url: `${orgUnit.Path}${fileName}`,
-				IsHidden: false,
+				IsHidden: isHidden,
 				IsLocked: false
 			}),
 			{ contentType: 'application/json' }
@@ -153,7 +164,7 @@ module.exports = class UploadCourseContent {
 		return response.json();
 	}
 
-	async _updateModule(instanceUrl, orgUnit, module, lmsModule) {
+	async _updateModule(instanceUrl, orgUnit, module, lmsModule, isHidden = false) {
 		const url = new URL(`/d2l/api/le/1.34/${orgUnit.Id}/content/modules/${lmsModule.Id}`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'PUT');
 
@@ -166,6 +177,7 @@ module.exports = class UploadCourseContent {
 				Title: module.title,
 				ShortTitle: module.title,
 				ModuleDueDate: module.dueDate || null,
+				IsHidden: isHidden,
 				Description: {
 					Html: description.toString('utf-8')
 				}
