@@ -46,8 +46,8 @@ module.exports = class UploadCourseContent {
 	}
 
 	async _processModule(instanceUrl, orgUnit, module, parentModule) {
-		const modules = await this._getContent(instanceUrl, orgUnit, parentModule);
-		let self = Array.isArray(modules) && modules.find(m => m.Type === 0 && m.Title === module.title);
+		const items = await this._getContent(instanceUrl, orgUnit, parentModule);
+		let self = Array.isArray(items) && items.find(m => m.Type === 0 && m.Title === module.title);
 
 		if (self) {
 			await this._updateModule(instanceUrl, orgUnit, module, self);
@@ -56,15 +56,14 @@ module.exports = class UploadCourseContent {
 		}
 
 		// Order matters on creates, so not using .map()
-		for (const topic of module.topics) {
-			// eslint-disable-next-line no-await-in-loop
-			await this._processTopic(instanceUrl, orgUnit, topic, self);
-		}
-
-		// Order matters on creates, so not using .map()
-		for (const submodule of module.submodules || []) {
-			// eslint-disable-next-line no-await-in-loop
-			await this._processModule(instanceUrl, orgUnit, submodule, self);
+		for (const child of module.children) {
+			if (child.type === 'topic') {
+				// eslint-disable-next-line no-await-in-loop
+				await this._processTopic(instanceUrl, orgUnit, child, self);
+			} else {
+				// eslint-disable-next-line no-await-in-loop
+				await this._processModule(instanceUrl, orgUnit, child, self);
+			}
 		}
 	}
 
@@ -232,7 +231,7 @@ module.exports = class UploadCourseContent {
 		return body;
 	}
 
-	async _getContent(instanceUrl, orgUnit, parentModule) {
+	async _getContent(instanceUrl, orgUnit, parentModule = null) {
 		const url = parentModule
 			? new URL(`/d2l/api/le/1.34/${orgUnit.Id}/content/modules/${parentModule.Id}/structure/`, instanceUrl)
 			: new URL(`/d2l/api/le/1.34/${orgUnit.Id}/content/root/`, instanceUrl);
