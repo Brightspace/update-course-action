@@ -8260,6 +8260,41 @@ module.exports = require("util");
 
 /***/ }),
 
+/***/ 676:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+"use strict";
+
+
+const { promises: fs } = __webpack_require__(747);
+const path = __webpack_require__(622);
+
+module.exports = class Content {
+	constructor(
+		{ rootPath }
+	) {
+		this._rootPath = rootPath;
+	}
+
+	_validateManifest(data) {
+		console.log(data); // Just logging for now
+	}
+
+	/**
+	 * Reads and interprets the manifest file
+	 */
+	async readManifest() {
+		const manifestPath = path.join(this._rootPath, 'manifest.json');
+		const manifest = await fs.readFile(manifestPath, 'utf8');
+		console.log(manifestPath);
+		this._validateManifest(manifest);
+		return manifest;
+	}
+};
+
+
+/***/ }),
+
 /***/ 697:
 /***/ (function(module) {
 
@@ -9315,14 +9350,6 @@ exports.Deprecation = Deprecation;
 
 /***/ }),
 
-/***/ 828:
-/***/ (function(module) {
-
-module.exports = eval("require")("./valence-auth");
-
-
-/***/ }),
-
 /***/ 829:
 /***/ (function(__unusedmodule, __unusedexports, __webpack_require__) {
 
@@ -9332,7 +9359,7 @@ module.exports = eval("require")("./valence-auth");
 const core = __webpack_require__(330);
 const github = __webpack_require__(350);
 
-const Content = __webpack_require__(828);
+const Content = __webpack_require__(676);
 
 async function run() {
 	const inputDir = core.getInput('inputDirectory');
