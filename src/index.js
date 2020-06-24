@@ -3,7 +3,7 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
 
-const Content = require('./valence-auth');
+const Content = require('./content');
 
 async function run() {
 	const inputDir = core.getInput('inputDirectory');
