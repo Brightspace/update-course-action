@@ -4,9 +4,10 @@ const core = require('@actions/core');
 const Content = require('./content');
 
 async function run() {
-	const inputDir = core.getInput('inputDirectory');
-	console.log(inputDir);
-	const content = new Content(inputDir);
+	const manifestPath = core.getInput('manifestPath');
+	const contentDirectory = core.getInput('contentDirectory');
+	console.log(manifestPath);
+	const content = new Content(manifestPath, contentDirectory);
 	await content.readManifest();
 }
 

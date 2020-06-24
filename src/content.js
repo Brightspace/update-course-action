@@ -1,13 +1,13 @@
 'use strict';
 
 const { promises: fs } = require('fs');
-const path = require('path');
 
 module.exports = class Content {
 	constructor(
-		{ rootPath }
+		manifestPath, contentDirectory
 	) {
-		this._rootPath = rootPath;
+		this._manifestPath = manifestPath;
+		this._contentDirectory = contentDirectory;
 	}
 
 	_validateManifest(data) {
@@ -18,9 +18,7 @@ module.exports = class Content {
 	 * Reads and interprets the manifest file
 	 */
 	async readManifest() {
-		const manifestPath = path.join(this._rootPath, 'manifest.json');
-		const manifest = await fs.readFile(manifestPath, 'utf8');
-		console.log(manifestPath);
+		const manifest = await fs.readFile(this._manifestPath, 'utf8');
 		this._validateManifest(manifest);
 		return manifest;
 	}

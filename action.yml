@@ -19,12 +19,12 @@ inputs:
   courseOrgUnitId:
     description: 'The OrgUnitId of the course to be updated'
     required: true
-  inputDirectory:
-    description: 'The path containing the manifest and files to be uploaded to the course'
+  contentDirectory:
+    description: 'The path containing the content files to be uploaded to the course'
     required: true
-outputs:
-  time:
-    description: 'The message to output'
+  manifestPath:
+    description: 'The path to the manifest.json file'
+    required: true
 runs:
   using: 'node12'
   main: 'dist/index.js'
