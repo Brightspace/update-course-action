@@ -1,5 +1,5 @@
 {
-  "$schema": "../../../manifest_schema_v1_0.json",
+  "$schema": "https://raw.githubusercontent.com/Brightspace/update-course-action/master/manifest_schema_v1_0.json",
   "modules": [
     {
       "title": "Test Module",
@@ -12,6 +12,10 @@
           "type": "topic",
           "fileName": "test-module/test-topic.md",
           "isRequired": false
+        },
+        {
+          "type": "resource",
+          "fileName": "test-module/resource.txt"
         }
       ]
     }

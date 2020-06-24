@@ -14,7 +14,7 @@ class MockValence {
 	}
 }
 
-test('uploadCourseContent creates module and topic', async t => {
+test('uploadCourseContent creates module, resource, and topic', async t => {
 	const url = new URL('https://example.com');
 
 	const fetch = fetchMock.sandbox();
@@ -83,6 +83,10 @@ test('uploadCourseContent creates module and topic', async t => {
 		}
 
 		const formdata = new FormData(options.body);
+		if (!formdata.getBuffer().toString('utf-8').includes('test-topic.html')) {
+			return false;
+		}
+
 		t.is(formdata.getBuffer().toString('utf-8'), `--${formdata.getBoundary()}\r\n`
 			+ 'Content-Disposition: form-data; name=""\r\n'
 			+ 'Content-Type: application/json\r\n\r\n'
@@ -111,6 +115,44 @@ test('uploadCourseContent creates module and topic', async t => {
 			}
 		}
 	});
+	fetch.post((url, options) => {
+		if (url !== 'https://example.com/d2l/api/le/1.34/123/content/modules/1/structure/') {
+			return false;
+		}
+
+		const formdata = new FormData(options.body);
+		if (!formdata.getBuffer().toString('utf-8').includes('resource.txt')) {
+			return false;
+		}
+
+		t.is(formdata.getBuffer().toString('utf-8'), `--${formdata.getBoundary()}\r\n`
+			+ 'Content-Disposition: form-data; name=""\r\n'
+			+ 'Content-Type: application/json\r\n\r\n'
+			+ '{"Title":"test-module/resource.txt","ShortTitle":"test-module/resource.txt","Type":1,"TopicType":1,"StartDate":null,"EndDate":null,"DueDate":null,"Url":"/content/course123/test-module/resource.txt","IsHidden":true,"IsLocked":false}\r\n'
+			+ `--${formdata.getBoundary()}\r\n`
+			+ 'Content-Disposition: form-data; name=""; filename="resource.txt"\r\n'
+			+ 'Content-Type: text/html\r\n\r\n'
+			+ 'ABC\n\r\n'
+			+ `--${formdata.getBoundary()}--\r\n`);
+
+		return true;
+	}, {
+		body: {
+			Id: 2,
+			Title: 'Test Topic',
+			Type: 1,
+			TopicType: 1,
+			StartDate: null,
+			EndDate: null,
+			DueDate: null,
+			IsHidden: false,
+			IsLocked: false,
+			OpenAsExternalResource: false,
+			Description: {
+				Html: 'ABC\n'
+			}
+		}
+	});
 
 	const uploader = new UploadCourseContent(fetch, MockValence, ContentPath);
 
@@ -119,7 +161,7 @@ test('uploadCourseContent creates module and topic', async t => {
 	t.true(fetch.done());
 });
 
-test('uploadCourseContent updates module and creates topic', async t => {
+test('uploadCourseContent updates module, creates resource and topic', async t => {
 	const url = new URL('https://example.com');
 
 	const fetch = fetchMock.sandbox();
@@ -191,6 +233,10 @@ test('uploadCourseContent updates module and creates topic', async t => {
 		}
 
 		const formdata = new FormData(options.body);
+		if (!formdata.getBuffer().toString('utf-8').includes('test-topic.html')) {
+			return false;
+		}
+
 		t.is(formdata.getBuffer().toString('utf-8'), `--${formdata.getBoundary()}\r\n`
 			+ 'Content-Disposition: form-data; name=""\r\n'
 			+ 'Content-Type: application/json\r\n\r\n'
@@ -220,6 +266,45 @@ test('uploadCourseContent updates module and creates topic', async t => {
 			}
 		}
 	});
+	fetch.post((url, options) => {
+		if (url !== 'https://example.com/d2l/api/le/1.34/123/content/modules/1/structure/') {
+			return false;
+		}
+
+		const formdata = new FormData(options.body);
+		if (!formdata.getBuffer().toString('utf-8').includes('resource.txt')) {
+			return false;
+		}
+
+		t.is(formdata.getBuffer().toString('utf-8'), `--${formdata.getBoundary()}\r\n`
+			+ 'Content-Disposition: form-data; name=""\r\n'
+			+ 'Content-Type: application/json\r\n\r\n'
+			+ '{"Title":"test-module/resource.txt","ShortTitle":"test-module/resource.txt","Type":1,"TopicType":1,"StartDate":null,"EndDate":null,"DueDate":null,"Url":"/content/course123/test-module/resource.txt","IsHidden":true,"IsLocked":false}\r\n'
+			+ `--${formdata.getBoundary()}\r\n`
+			+ 'Content-Disposition: form-data; name=""; filename="resource.txt"\r\n'
+			+ 'Content-Type: text/html\r\n\r\n'
+			+ 'ABC\n\r\n'
+			+ `--${formdata.getBoundary()}--\r\n`);
+
+		return true;
+	}, {
+		body: {
+			Id: 2,
+			Title: 'Test Topic',
+			ShortTitle: 'Test Topic',
+			Type: 1,
+			TopicType: 1,
+			StartDate: null,
+			EndDate: null,
+			DueDate: null,
+			IsHidden: false,
+			IsLocked: false,
+			OpenAsExternalResource: false,
+			Description: {
+				Html: '<h1></h1>\n'
+			}
+		}
+	});
 
 	const uploader = new UploadCourseContent(fetch, MockValence, ContentPath);
 
@@ -228,7 +313,7 @@ test('uploadCourseContent updates module and creates topic', async t => {
 	t.true(fetch.done());
 });
 
-test('uploadCourseContent updates module and topic', async t => {
+test('uploadCourseContent updates module, resource, and topic', async t => {
 	const url = new URL('https://example.com');
 
 	const fetch = fetchMock.sandbox();
@@ -307,6 +392,17 @@ test('uploadCourseContent updates module and topic', async t => {
 			Description: {
 				Html: '<h1></h1>\n'
 			}
+		}, {
+			Id: 3,
+			Title: 'test-module/resource.txt',
+			ShortTitle: 'test-module/resource.txt',
+			Type: 1,
+			TopicType: 1,
+			DueDate: null,
+			StartDate: null,
+			EndDate: null,
+			IsHidden: true,
+			IsLocked: false
 		}]
 	});
 	fetch.put((url, options) => {
@@ -360,6 +456,61 @@ test('uploadCourseContent updates module and topic', async t => {
 			+ 'Content-Disposition: form-data; name="file"; filename="test-topic.html"\r\n'
 			+ 'Content-Type: text/html\r\n\r\n'
 			+ '<h1></h1>\n\r\n'
+			+ `--${formdata.getBoundary()}--\r\n`);
+
+		return true;
+	}, {
+		status: 200
+	});
+	fetch.put((url, options) => {
+		if (url !== 'https://example.com/d2l/api/le/1.34/123/content/topics/3') {
+			return false;
+		}
+
+		if (!options.body.includes('resource.txt')) {
+			return false;
+		}
+
+		t.deepEqual(JSON.parse(options.body), {
+			Id: 3,
+			Title: 'test-module/resource.txt',
+			ShortTitle: 'test-module/resource.txt',
+			Type: 1,
+			TopicType: 1,
+			StartDate: null,
+			EndDate: null,
+			DueDate: null,
+			IsHidden: true,
+			IsLocked: false,
+			ResetCompletionTracking: true,
+			Url: '/content/course123/test-module/resource.txt'
+		});
+
+		return true;
+	}, {
+		body: {
+			Id: 3,
+			Title: 'test-module/resource.txt',
+			Type: 1,
+			TopicType: 1,
+			StartDate: null,
+			EndDate: null,
+			DueDate: null,
+			IsHidden: true,
+			IsLocked: false,
+			OpenAsExternalResource: false
+		}
+	});
+	fetch.put((url, options) => {
+		if (url !== 'https://example.com/d2l/api/le/1.34/123/content/topics/3/file') {
+			return false;
+		}
+
+		const formdata = new FormData(options.body);
+		t.is(formdata.getBuffer().toString('utf-8'), `--${formdata.getBoundary()}\r\n`
+			+ 'Content-Disposition: form-data; name="file"; filename="resource.txt"\r\n'
+			+ 'Content-Type: text/html\r\n\r\n'
+			+ 'ABC\n\r\n'
 			+ `--${formdata.getBoundary()}--\r\n`);
 
 		return true;
