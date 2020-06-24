@@ -143,7 +143,8 @@ module.exports = class UploadCourseContent {
 				DueDate: topic.dueDate || null,
 				Url: `${orgUnit.Path}${fileName}`,
 				IsHidden: isHidden,
-				IsLocked: false
+				IsLocked: false,
+				IsExempt: !topic.isRequired
 			}),
 			{ contentType: 'application/json' }
 		);
@@ -207,7 +208,8 @@ module.exports = class UploadCourseContent {
 				ShortTitle: topic.title,
 				Url: `${orgUnit.Path}${fileName}`,
 				DueDate: topic.dueDate || null,
-				ResetCompletionTracking: true
+				ResetCompletionTracking: true,
+				IsExempt: !topic.isRequired
 			}
 		};
 
