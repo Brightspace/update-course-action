@@ -391,13 +391,13 @@ exports.getState = getState;
 
 
 const { promises: fs } = __webpack_require__(747);
-const path = __webpack_require__(622);
 
 module.exports = class Content {
 	constructor(
-		{ rootPath }
+		manifestPath, contentDirectory
 	) {
-		this._rootPath = rootPath;
+		this._manifestPath = manifestPath;
+		this._contentDirectory = contentDirectory;
 	}
 
 	_validateManifest(data) {
@@ -408,9 +408,7 @@ module.exports = class Content {
 	 * Reads and interprets the manifest file
 	 */
 	async readManifest() {
-		const manifestPath = path.join(this._rootPath, 'manifest.json');
-		const manifest = await fs.readFile(manifestPath, 'utf8');
-		console.log(manifestPath);
+		const manifest = await fs.readFile(this._manifestPath, 'utf8');
 		this._validateManifest(manifest);
 		return manifest;
 	}
@@ -443,9 +441,10 @@ const core = __webpack_require__(330);
 const Content = __webpack_require__(350);
 
 async function run() {
-	const inputDir = core.getInput('inputDirectory');
-	console.log(inputDir);
-	const content = new Content(inputDir);
+	const manifestPath = core.getInput('manifestPath');
+	const contentDirectory = core.getInput('contentDirectory');
+	console.log(manifestPath);
+	const content = new Content(manifestPath, contentDirectory);
 	await content.readManifest();
 }
 
