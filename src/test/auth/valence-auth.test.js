@@ -2,9 +2,9 @@
 
 const test = require('ava');
 
-const ValenceAuth = require('../auth/valence-auth');
+const ValenceAuth = require('../../auth/valence-auth');
 
-test('createAuthenticatedToken returns a signed url', t => {
+test('createAuthenticatedUrl returns a signed url', t => {
 	const auth = new ValenceAuth({
 		appId: 'foo', appKey: 'bar', userId: 'baz', userKey: 'quux'
 	});
@@ -31,7 +31,7 @@ test('createAuthenticatedToken returns a signed url', t => {
 	t.is(searchParameters.get('x_t'), '1397958932');
 });
 
-test('createAuthenticatedToken should not include query parameters in signature', t => {
+test('createAuthenticatedUrl should not include query parameters in signature', t => {
 	const auth = new ValenceAuth({
 		appId: 'foo', appKey: 'bar', userId: 'baz', userKey: 'quux'
 	});

@@ -1,0 +1,125 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "manifest_schema_v1_0",
+  "type": "object",
+  "additionalProperties": false,
+  "definitions": {
+    "module": {
+      "type": "object",
+      "additionalProperties": false,
+      "title": "A course content module",
+      "properties": {
+        "title": {
+          "type": "string",
+          "title": "The title of the content module"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "module"
+          ]
+        },
+        "descriptionFileName": {
+          "type": "string",
+          "title": "The file name of the content module description content"
+        },
+        "dueDate": {
+          "type": "string",
+          "title": "The content topic due date"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/module"
+              },
+              {
+                "$ref": "#/definitions/resource"
+              },
+              {
+                "$ref": "#/definitions/topic"
+              }
+            ]
+          }
+        }
+      },
+      "required": [
+        "title",
+        "type",
+        "children"
+      ]
+    },
+    "resource": {
+      "type": "object",
+      "additionalItems": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "resource"
+          ]
+        },
+        "fileName": {
+          "type": "string",
+          "title": "The fileName of the resource"
+        }
+      },
+      "required": [
+        "type",
+        "fileName"
+      ]
+    },
+    "topic": {
+      "type": "object",
+      "additionalProperties": false,
+      "title": "A course content topic",
+      "properties": {
+        "title": {
+          "type": "string",
+          "title": "The title of the content topic"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "topic"
+          ]
+        },
+        "dueDate": {
+          "type": "string",
+          "title": "The content topic due date"
+        },
+        "fileName": {
+          "type": "string",
+          "title": "The file name of the content topic"
+        },
+        "isRequired": {
+          "type": "boolean",
+          "title": "Indicates if the content topic is required for completion"
+        }
+      },
+      "required": [
+        "title",
+        "type",
+        "fileName"
+      ]
+    }
+  },
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "title": "The schema which uniquely identifies the manifest type"
+    },
+    "modules": {
+      "type": "array",
+      "title": "The course modules",
+      "items": {
+        "$ref": "#/definitions/module"
+      }
+    }
+  },
+  "required": [
+    "$schema",
+    "modules"
+  ]
+}
