@@ -1,12 +1,14 @@
 'use strict';
 
+const path = require('path');
+
 const test = require('ava');
 const fetchMock = require('fetch-mock');
 
 const FormData = require('form-data');
 const UploadCourseContent = require('../upload-course-content');
 
-const ContentPath = './src/test/content';
+const ContentPath = path.join(__dirname, 'content');
 
 class MockValence {
 	createAuthenticatedUrl(url) {
@@ -90,7 +92,7 @@ test('uploadCourseContent creates module, resource, and topic', async t => {
 		t.is(formdata.getBuffer().toString('utf-8'), `--${formdata.getBoundary()}\r\n`
 			+ 'Content-Disposition: form-data; name=""\r\n'
 			+ 'Content-Type: application/json\r\n\r\n'
-			+ '{"Title":"Test Topic","ShortTitle":"Test Topic","Type":1,"TopicType":1,"StartDate":null,"EndDate":null,"DueDate":null,"Url":"/content/course123/test-module/test-topic.html","IsHidden":false,"IsLocked":false}\r\n'
+			+ '{"Title":"Test Topic","ShortTitle":"Test Topic","Type":1,"TopicType":1,"StartDate":null,"EndDate":null,"DueDate":null,"Url":"/content/course123/test-module/test-topic.html","IsHidden":false,"IsLocked":false,"IsExempt":false}\r\n'
 			+ `--${formdata.getBoundary()}\r\n`
 			+ 'Content-Disposition: form-data; name=""; filename="test-topic.html"\r\n'
 			+ 'Content-Type: text/html\r\n\r\n'
@@ -109,6 +111,7 @@ test('uploadCourseContent creates module, resource, and topic', async t => {
 			DueDate: null,
 			IsHidden: false,
 			IsLocked: false,
+			IsExempt: false,
 			OpenAsExternalResource: false,
 			Description: {
 				Html: '<h1></h1>\n'
@@ -128,7 +131,7 @@ test('uploadCourseContent creates module, resource, and topic', async t => {
 		t.is(formdata.getBuffer().toString('utf-8'), `--${formdata.getBoundary()}\r\n`
 			+ 'Content-Disposition: form-data; name=""\r\n'
 			+ 'Content-Type: application/json\r\n\r\n'
-			+ '{"Title":"test-module/resource.txt","ShortTitle":"test-module/resource.txt","Type":1,"TopicType":1,"StartDate":null,"EndDate":null,"DueDate":null,"Url":"/content/course123/test-module/resource.txt","IsHidden":true,"IsLocked":false}\r\n'
+			+ '{"Title":"test-module/resource.txt","ShortTitle":"test-module/resource.txt","Type":1,"TopicType":1,"StartDate":null,"EndDate":null,"DueDate":null,"Url":"/content/course123/test-module/resource.txt","IsHidden":true,"IsLocked":false,"IsExempt":true}\r\n'
 			+ `--${formdata.getBoundary()}\r\n`
 			+ 'Content-Disposition: form-data; name=""; filename="resource.txt"\r\n'
 			+ 'Content-Type: text/html\r\n\r\n'
@@ -138,8 +141,8 @@ test('uploadCourseContent creates module, resource, and topic', async t => {
 		return true;
 	}, {
 		body: {
-			Id: 2,
-			Title: 'Test Topic',
+			Id: 3,
+			Title: 'test-module/resource.txt',
 			Type: 1,
 			TopicType: 1,
 			StartDate: null,
@@ -147,10 +150,8 @@ test('uploadCourseContent creates module, resource, and topic', async t => {
 			DueDate: null,
 			IsHidden: false,
 			IsLocked: false,
-			OpenAsExternalResource: false,
-			Description: {
-				Html: 'ABC\n'
-			}
+			IsExempt: true,
+			OpenAsExternalResource: false
 		}
 	});
 
@@ -240,7 +241,7 @@ test('uploadCourseContent updates module, creates resource and topic', async t =
 		t.is(formdata.getBuffer().toString('utf-8'), `--${formdata.getBoundary()}\r\n`
 			+ 'Content-Disposition: form-data; name=""\r\n'
 			+ 'Content-Type: application/json\r\n\r\n'
-			+ '{"Title":"Test Topic","ShortTitle":"Test Topic","Type":1,"TopicType":1,"StartDate":null,"EndDate":null,"DueDate":null,"Url":"/content/course123/test-module/test-topic.html","IsHidden":false,"IsLocked":false}\r\n'
+			+ '{"Title":"Test Topic","ShortTitle":"Test Topic","Type":1,"TopicType":1,"StartDate":null,"EndDate":null,"DueDate":null,"Url":"/content/course123/test-module/test-topic.html","IsHidden":false,"IsLocked":false,"IsExempt":false}\r\n'
 			+ `--${formdata.getBoundary()}\r\n`
 			+ 'Content-Disposition: form-data; name=""; filename="test-topic.html"\r\n'
 			+ 'Content-Type: text/html\r\n\r\n'
@@ -260,10 +261,8 @@ test('uploadCourseContent updates module, creates resource and topic', async t =
 			DueDate: null,
 			IsHidden: false,
 			IsLocked: false,
-			OpenAsExternalResource: false,
-			Description: {
-				Html: '<h1></h1>\n'
-			}
+			IsExempt: false,
+			OpenAsExternalResource: false
 		}
 	});
 	fetch.post((url, options) => {
@@ -279,7 +278,7 @@ test('uploadCourseContent updates module, creates resource and topic', async t =
 		t.is(formdata.getBuffer().toString('utf-8'), `--${formdata.getBoundary()}\r\n`
 			+ 'Content-Disposition: form-data; name=""\r\n'
 			+ 'Content-Type: application/json\r\n\r\n'
-			+ '{"Title":"test-module/resource.txt","ShortTitle":"test-module/resource.txt","Type":1,"TopicType":1,"StartDate":null,"EndDate":null,"DueDate":null,"Url":"/content/course123/test-module/resource.txt","IsHidden":true,"IsLocked":false}\r\n'
+			+ '{"Title":"test-module/resource.txt","ShortTitle":"test-module/resource.txt","Type":1,"TopicType":1,"StartDate":null,"EndDate":null,"DueDate":null,"Url":"/content/course123/test-module/resource.txt","IsHidden":true,"IsLocked":false,"IsExempt":true}\r\n'
 			+ `--${formdata.getBoundary()}\r\n`
 			+ 'Content-Disposition: form-data; name=""; filename="resource.txt"\r\n'
 			+ 'Content-Type: text/html\r\n\r\n'
@@ -289,9 +288,9 @@ test('uploadCourseContent updates module, creates resource and topic', async t =
 		return true;
 	}, {
 		body: {
-			Id: 2,
-			Title: 'Test Topic',
-			ShortTitle: 'Test Topic',
+			Id: 3,
+			Title: 'test-module/resource.txt',
+			ShortTitle: 'test-module/resource.txt',
 			Type: 1,
 			TopicType: 1,
 			StartDate: null,
@@ -299,10 +298,8 @@ test('uploadCourseContent updates module, creates resource and topic', async t =
 			DueDate: null,
 			IsHidden: false,
 			IsLocked: false,
-			OpenAsExternalResource: false,
-			Description: {
-				Html: '<h1></h1>\n'
-			}
+			IsExempt: true,
+			OpenAsExternalResource: false
 		}
 	});
 
@@ -389,9 +386,8 @@ test('uploadCourseContent updates module, resource, and topic', async t => {
 			EndDate: null,
 			IsHidden: false,
 			IsLocked: false,
-			Description: {
-				Html: '<h1></h1>\n'
-			}
+			IsExempt: false,
+			OpenAsExternalResource: false
 		}, {
 			Id: 3,
 			Title: 'test-module/resource.txt',
@@ -402,7 +398,9 @@ test('uploadCourseContent updates module, resource, and topic', async t => {
 			StartDate: null,
 			EndDate: null,
 			IsHidden: true,
-			IsLocked: false
+			IsLocked: false,
+			IsExempt: true,
+			OpenAsExternalResource: false
 		}]
 	});
 	fetch.put((url, options) => {
@@ -421,11 +419,10 @@ test('uploadCourseContent updates module, resource, and topic', async t => {
 			DueDate: null,
 			IsHidden: false,
 			IsLocked: false,
+			IsExempt: false,
+			OpenAsExternalResource: false,
 			ResetCompletionTracking: true,
-			Url: '/content/course123/test-module/test-topic.html',
-			Description: {
-				Html: '<h1></h1>\n'
-			}
+			Url: '/content/course123/test-module/test-topic.html'
 		});
 
 		return true;
@@ -440,10 +437,8 @@ test('uploadCourseContent updates module, resource, and topic', async t => {
 			DueDate: null,
 			IsHidden: false,
 			IsLocked: false,
-			OpenAsExternalResource: false,
-			Description: {
-				Html: '<h1></h1>\n'
-			}
+			IsExempt: false,
+			OpenAsExternalResource: false
 		}
 	});
 	fetch.put((url, options) => {
@@ -482,6 +477,8 @@ test('uploadCourseContent updates module, resource, and topic', async t => {
 			DueDate: null,
 			IsHidden: true,
 			IsLocked: false,
+			IsExempt: true,
+			OpenAsExternalResource: false,
 			ResetCompletionTracking: true,
 			Url: '/content/course123/test-module/resource.txt'
 		});
@@ -491,6 +488,7 @@ test('uploadCourseContent updates module, resource, and topic', async t => {
 		body: {
 			Id: 3,
 			Title: 'test-module/resource.txt',
+			ShortTitle: 'test-module/resource.txt',
 			Type: 1,
 			TopicType: 1,
 			StartDate: null,
@@ -498,6 +496,7 @@ test('uploadCourseContent updates module, resource, and topic', async t => {
 			DueDate: null,
 			IsHidden: true,
 			IsLocked: false,
+			IsExempt: true,
 			OpenAsExternalResource: false
 		}
 	});

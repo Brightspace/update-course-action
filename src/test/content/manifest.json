@@ -11,7 +11,7 @@
           "title": "Test Topic",
           "type": "topic",
           "fileName": "test-module/test-topic.md",
-          "isRequired": false
+          "isRequired": true
         },
         {
           "type": "resource",
