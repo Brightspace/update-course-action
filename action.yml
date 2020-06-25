@@ -25,6 +25,10 @@ inputs:
   manifestPath:
     description: 'The path to the manifest.json file'
     required: true
+  dryRun:
+    description: 'Whether to upload files to the course'
+    required: false
+    default: false
 runs:
   using: 'node12'
   main: 'dist/index.js'

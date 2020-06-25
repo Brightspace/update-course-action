@@ -5,9 +5,13 @@ const FormData = require('form-data');
 
 module.exports = class UploadCourseContent {
 	constructor(
-		fetch = require('node-fetch'),
+		{
+			contentPath,
+			manifestPath,
+			isDryRun
+		},
 		ValenceAuth = require('./auth/valence-auth'),
-		contentPath = './content'
+		fetch = require('node-fetch')
 	) {
 		this._fetch = fetch;
 		this._valence = new ValenceAuth({
@@ -17,6 +21,8 @@ module.exports = class UploadCourseContent {
 			userKey: process.env.VALENCE_APPKEY
 		});
 		this._contentPath = contentPath;
+		this._manifestPath = manifestPath;
+		this._dryRun = isDryRun;
 
 		this._markdownRegex = /.md$/i;
 	}
@@ -101,6 +107,11 @@ module.exports = class UploadCourseContent {
 		const descriptionFileName = module.descriptionFileName.replace(this._markdownRegex, '.html');
 		const description = await fs.promises.readFile(`${this._contentPath}/${descriptionFileName}`);
 
+		if (this._dryRun) {
+			console.log(`Creating module ${module.title}`);
+			return UploadCourseContent.DRY_RUN_FAKE_MODULE;
+		}
+
 		const response = await this._fetch(
 			signedUrl,
 			{
@@ -119,7 +130,6 @@ module.exports = class UploadCourseContent {
 					}
 				})
 			});
-
 		return response.json();
 	}
 
@@ -154,6 +164,11 @@ module.exports = class UploadCourseContent {
 			{ contentType: 'text/html', filename: `${fileName}` }
 		);
 
+		if (this._dryRun) {
+			console.log(`Creating ${topic.title} with file ${orgUnit.Path}${fileName}`);
+			return {};
+		}
+
 		const response = await this._fetch(
 			signedUrl,
 			{
@@ -161,7 +176,6 @@ module.exports = class UploadCourseContent {
 				headers: `multipart/mixed; ${formData.getBoundary()}`,
 				body: formData
 			});
-
 		return response.json();
 	}
 
@@ -185,12 +199,16 @@ module.exports = class UploadCourseContent {
 			}
 		};
 
-		await this._fetch(
-			signedUrl,
-			{
-				method: 'PUT',
-				body: JSON.stringify(body)
-			});
+		if (this._dryRun) {
+			console.log(`Updating module ${module.title}`);
+		} else {
+			await this._fetch(
+				signedUrl,
+				{
+					method: 'PUT',
+					body: JSON.stringify(body)
+				});
+		}
 
 		return body;
 	}
@@ -213,16 +231,8 @@ module.exports = class UploadCourseContent {
 			}
 		};
 
-		await this._fetch(
-			signedUrl,
-			{
-				method: 'PUT',
-				body: JSON.stringify(body)
-			});
-
 		const fileUrl = new URL(`/d2l/api/le/1.34/${orgUnit.Id}/content/topics/${lmsTopic.Id}/file`, instanceUrl);
 		const signedFileUrl = this._valence.createAuthenticatedUrl(fileUrl, 'PUT');
-
 		const fileContent = await fs.promises.readFile(`${this._contentPath}/${fileName}`);
 
 		const formData = new FormData();
@@ -232,15 +242,26 @@ module.exports = class UploadCourseContent {
 			{ contentType: 'text/html', filename: `${fileName}` }
 		);
 
-		await this._fetch(
-			signedFileUrl,
-			{
-				method: 'PUT',
-				headers: {
-					'Content-Type': 'multipart/mixed'
-				},
-				body: formData
-			});
+		if (this._dryRun) {
+			console.log(`Updating ${topic.title} and file ${fileName}`);
+		} else {
+			await this._fetch(
+				signedUrl,
+				{
+					method: 'PUT',
+					body: JSON.stringify(body)
+				});
+
+			await this._fetch(
+				signedFileUrl,
+				{
+					method: 'PUT',
+					headers: {
+						'Content-Type': 'multipart/mixed'
+					},
+					body: formData
+				});
+		}
 
 		return body;
 	}
@@ -257,7 +278,7 @@ module.exports = class UploadCourseContent {
 	}
 
 	async _getManifest() {
-		const manifest = await fs.promises.readFile(`${this._contentPath}/manifest.json`);
+		const manifest = await fs.promises.readFile(this._manifestPath);
 
 		return JSON.parse(manifest.toString('utf-8'));
 	}
@@ -278,5 +299,9 @@ module.exports = class UploadCourseContent {
 		const response = await this._fetch(signedUrl);
 
 		return response.json();
+	}
+
+	static get DRY_RUN_FAKE_MODULE() {
+		return {Id: 23487};
 	}
 };
