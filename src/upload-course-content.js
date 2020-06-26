@@ -6,7 +6,7 @@ const FormData = require('form-data');
 module.exports = class UploadCourseContent {
 	constructor(
 		{
-			contentPath,
+			contentDirectory,
 			manifestPath,
 			isDryRun
 		},
@@ -15,7 +15,7 @@ module.exports = class UploadCourseContent {
 	) {
 		this._fetch = fetch;
 		this._valence = valence;
-		this._contentPath = contentPath;
+		this._contentDir = contentDirectory;
 		this._manifestPath = manifestPath;
 		this._dryRun = isDryRun;
 
@@ -100,7 +100,7 @@ module.exports = class UploadCourseContent {
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'POST');
 
 		const descriptionFileName = module.descriptionFileName.replace(this._markdownRegex, '.html');
-		const description = await fs.promises.readFile(`${this._contentPath}/${descriptionFileName}`);
+		const description = await fs.promises.readFile(`${this._contentDir}/${descriptionFileName}`);
 
 		if (this._dryRun) {
 			console.log(`Creating module ${module.title}`);
@@ -133,7 +133,7 @@ module.exports = class UploadCourseContent {
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'POST');
 
 		const fileName = topic.fileName.replace(this._markdownRegex, '.html');
-		const fileContent = await fs.promises.readFile(`${this._contentPath}/${fileName}`);
+		const fileContent = await fs.promises.readFile(`${this._contentDir}/${fileName}`);
 
 		const formData = new FormData();
 		formData.append(
@@ -179,7 +179,7 @@ module.exports = class UploadCourseContent {
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'PUT');
 
 		const descriptionFileName = module.descriptionFileName.replace(this._markdownRegex, '.html');
-		const description = await fs.promises.readFile(`${this._contentPath}/${descriptionFileName}`);
+		const description = await fs.promises.readFile(`${this._contentDir}/${descriptionFileName}`);
 
 		const body = {
 			...lmsModule,
@@ -228,7 +228,7 @@ module.exports = class UploadCourseContent {
 
 		const fileUrl = new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/topics/${lmsTopic.Identifier}/file`, instanceUrl);
 		const signedFileUrl = this._valence.createAuthenticatedUrl(fileUrl, 'PUT');
-		const fileContent = await fs.promises.readFile(`${this._contentPath}/${fileName}`);
+		const fileContent = await fs.promises.readFile(`${this._contentDir}/${fileName}`);
 
 		const formData = new FormData();
 		formData.append(
