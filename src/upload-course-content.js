@@ -35,7 +35,7 @@ module.exports = class UploadCourseContent {
 		console.log(`Running in user context: ${whoAmI.UniqueName}`);
 
 		const orgUnit = await this._getOrgUnit(instanceUrl, orgUnitId);
-		console.log(`Found course offering: ${orgUnit.Name}`);
+		console.log(`Found course offering: ${orgUnit.Name} with id ${orgUnit.Identifier}`);
 
 		const manifest = await this._getManifest();
 
@@ -95,8 +95,8 @@ module.exports = class UploadCourseContent {
 
 	async _createModule(instanceUrl, orgUnit, module, parentModule) {
 		const url = parentModule
-			? new URL(`/d2l/api/le/1.34/${orgUnit.Id}/content/modules/${parentModule.Id}/structure/`, instanceUrl)
-			: new URL(`/d2l/api/le/1.34/${orgUnit.Id}/content/root/`, instanceUrl);
+			? new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/modules/${parentModule.ModuleId}/structure/`, instanceUrl)
+			: new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/root/`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'POST');
 
 		const descriptionFileName = module.descriptionFileName.replace(this._markdownRegex, '.html');
@@ -129,7 +129,7 @@ module.exports = class UploadCourseContent {
 	}
 
 	async _createTopic(instanceUrl, orgUnit, topic, parentModule, isHidden = false) {
-		const url = new URL(`/d2l/api/le/1.34/${orgUnit.Id}/content/modules/${parentModule.Id}/structure/`, instanceUrl);
+		const url = new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/modules/${parentModule.ModuleId}/structure/`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'POST');
 
 		const fileName = topic.fileName.replace(this._markdownRegex, '.html');
@@ -175,7 +175,7 @@ module.exports = class UploadCourseContent {
 	}
 
 	async _updateModule(instanceUrl, orgUnit, module, lmsModule, isHidden = false) {
-		const url = new URL(`/d2l/api/le/1.34/${orgUnit.Id}/content/modules/${lmsModule.Id}`, instanceUrl);
+		const url = new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/modules/${lmsModule.ModuleId}`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'PUT');
 
 		const descriptionFileName = module.descriptionFileName.replace(this._markdownRegex, '.html');
@@ -209,7 +209,7 @@ module.exports = class UploadCourseContent {
 	}
 
 	async _updateTopic(instanceUrl, orgUnit, topic, lmsTopic) {
-		const url = new URL(`/d2l/api/le/1.34/${orgUnit.Id}/content/topics/${lmsTopic.Id}`, instanceUrl);
+		const url = new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/topics/${lmsTopic.Identifier}`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'PUT');
 
 		const fileName = topic.fileName.replace(this._markdownRegex, '.html');
@@ -226,7 +226,7 @@ module.exports = class UploadCourseContent {
 			}
 		};
 
-		const fileUrl = new URL(`/d2l/api/le/1.34/${orgUnit.Id}/content/topics/${lmsTopic.Id}/file`, instanceUrl);
+		const fileUrl = new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/topics/${lmsTopic.Identifier}/file`, instanceUrl);
 		const signedFileUrl = this._valence.createAuthenticatedUrl(fileUrl, 'PUT');
 		const fileContent = await fs.promises.readFile(`${this._contentPath}/${fileName}`);
 
@@ -263,8 +263,8 @@ module.exports = class UploadCourseContent {
 
 	async _getContent(instanceUrl, orgUnit, parentModule = null) {
 		const url = parentModule
-			? new URL(`/d2l/api/le/1.34/${orgUnit.Id}/content/modules/${parentModule.Id}/structure/`, instanceUrl)
-			: new URL(`/d2l/api/le/1.34/${orgUnit.Id}/content/root/`, instanceUrl);
+			? new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/modules/${parentModule.ModuleId}/structure/`, instanceUrl)
+			: new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/root/`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'GET');
 
 		const response = await this._fetch(signedUrl);
@@ -297,6 +297,6 @@ module.exports = class UploadCourseContent {
 	}
 
 	static get DRY_RUN_FAKE_MODULE() {
-		return {Id: 23487};
+		return {ModuleId: 23487};
 	}
 };

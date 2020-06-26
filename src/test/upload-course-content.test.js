@@ -32,7 +32,7 @@ test('uploadCourseContent creates module, resource, and topic', async t => {
 		url: 'https://example.com/d2l/api/lp/1.23/courses/123'
 	}, {
 		body: {
-			Id: '123',
+			Identifier: '123',
 			Name: 'Org Unit',
 			Path: '/content/course123/'
 		}
@@ -63,7 +63,7 @@ test('uploadCourseContent creates module, resource, and topic', async t => {
 
 		return true;
 	}, {
-		Id: 1,
+		ModuleId: 1,
 		ShortTitle: 'Test Module',
 		Type: 0,
 		ModuleStartDate: null,
@@ -103,7 +103,7 @@ test('uploadCourseContent creates module, resource, and topic', async t => {
 		return true;
 	}, {
 		body: {
-			Id: 2,
+			Identifier: 2,
 			Title: 'Test Topic',
 			Type: 1,
 			TopicType: 1,
@@ -142,7 +142,7 @@ test('uploadCourseContent creates module, resource, and topic', async t => {
 		return true;
 	}, {
 		body: {
-			Id: 3,
+			Identifier: 3,
 			Title: 'test-module/resource.txt',
 			Type: 1,
 			TopicType: 1,
@@ -178,7 +178,7 @@ test('uploadCourseContent skips creation on dry run', async t => {
 		url: 'https://example.com/d2l/api/lp/1.23/courses/123'
 	}, {
 		body: {
-			Id: '123',
+			Identifier: '123',
 			Name: 'Org Unit',
 			Path: '/content/course123/'
 		}
@@ -189,7 +189,7 @@ test('uploadCourseContent skips creation on dry run', async t => {
 		body: ''
 	});
 	fetch.get({
-		url: `https://example.com/d2l/api/le/1.34/123/content/modules/${UploadCourseContent.DRY_RUN_FAKE_MODULE.Id}/structure/`
+		url: `https://example.com/d2l/api/le/1.34/123/content/modules/${UploadCourseContent.DRY_RUN_FAKE_MODULE.ModuleId}/structure/`
 	}, {
 		body: ''
 	});
@@ -216,7 +216,7 @@ test('uploadCourseContent updates module, creates resource and topic', async t =
 		url: 'https://example.com/d2l/api/lp/1.23/courses/123'
 	}, {
 		body: {
-			Id: '123',
+			Identifier: '123',
 			Name: 'Org Unit',
 			Path: '/content/course123/'
 		}
@@ -225,7 +225,7 @@ test('uploadCourseContent updates module, creates resource and topic', async t =
 		url: 'https://example.com/d2l/api/le/1.34/123/content/root/'
 	}, {
 		body: [{
-			Id: 1,
+			ModuleId: 1,
 			Type: 0,
 			Title: 'Test Module',
 			ModuleStartDate: null,
@@ -244,7 +244,7 @@ test('uploadCourseContent updates module, creates resource and topic', async t =
 		}
 
 		t.deepEqual(JSON.parse(options.body), {
-			Id: 1,
+			ModuleId: 1,
 			Title: 'Test Module',
 			ShortTitle: 'Test Module',
 			Type: 0,
@@ -290,7 +290,7 @@ test('uploadCourseContent updates module, creates resource and topic', async t =
 		return true;
 	}, {
 		body: {
-			Id: 2,
+			Identifier: 2,
 			Title: 'Test Topic',
 			ShortTitle: 'Test Topic',
 			Type: 1,
@@ -327,7 +327,7 @@ test('uploadCourseContent updates module, creates resource and topic', async t =
 		return true;
 	}, {
 		body: {
-			Id: 3,
+			Identifier: 3,
 			Title: 'test-module/resource.txt',
 			ShortTitle: 'test-module/resource.txt',
 			Type: 1,
@@ -364,7 +364,7 @@ test('uploadCourseContent updates module, resource, and topic', async t => {
 		url: 'https://example.com/d2l/api/lp/1.23/courses/123'
 	}, {
 		body: {
-			Id: '123',
+			Identifier: '123',
 			Name: 'Org Unit',
 			Path: '/content/course123/'
 		}
@@ -373,7 +373,7 @@ test('uploadCourseContent updates module, resource, and topic', async t => {
 		url: 'https://example.com/d2l/api/le/1.34/123/content/root/'
 	}, {
 		body: [{
-			Id: 1,
+			ModuleId: 1,
 			Title: 'Test Module',
 			ShortTitle: 'Test Module',
 			Type: 0,
@@ -393,7 +393,7 @@ test('uploadCourseContent updates module, resource, and topic', async t => {
 		}
 
 		t.deepEqual(JSON.parse(options.body), {
-			Id: 1,
+			ModuleId: 1,
 			Title: 'Test Module',
 			ShortTitle: 'Test Module',
 			Type: 0,
@@ -415,7 +415,7 @@ test('uploadCourseContent updates module, resource, and topic', async t => {
 		url: 'https://example.com/d2l/api/le/1.34/123/content/modules/1/structure/'
 	}, {
 		body: [{
-			Id: 2,
+			Identifier: 2,
 			Title: 'Test Topic',
 			ShortTitle: 'Test Topic',
 			Type: 1,
@@ -428,7 +428,7 @@ test('uploadCourseContent updates module, resource, and topic', async t => {
 			IsExempt: false,
 			OpenAsExternalResource: false
 		}, {
-			Id: 3,
+			Identifier: 3,
 			Title: 'test-module/resource.txt',
 			ShortTitle: 'test-module/resource.txt',
 			Type: 1,
@@ -448,7 +448,7 @@ test('uploadCourseContent updates module, resource, and topic', async t => {
 		}
 
 		t.deepEqual(JSON.parse(options.body), {
-			Id: 2,
+			Identifier: 2,
 			Title: 'Test Topic',
 			ShortTitle: 'Test Topic',
 			Type: 1,
@@ -467,7 +467,7 @@ test('uploadCourseContent updates module, resource, and topic', async t => {
 		return true;
 	}, {
 		body: {
-			Id: 2,
+			Identifier: 2,
 			Title: 'Test Topic',
 			Type: 1,
 			TopicType: 1,
@@ -506,7 +506,7 @@ test('uploadCourseContent updates module, resource, and topic', async t => {
 		}
 
 		t.deepEqual(JSON.parse(options.body), {
-			Id: 3,
+			Identifier: 3,
 			Title: 'test-module/resource.txt',
 			ShortTitle: 'test-module/resource.txt',
 			Type: 1,
@@ -525,7 +525,7 @@ test('uploadCourseContent updates module, resource, and topic', async t => {
 		return true;
 	}, {
 		body: {
-			Id: 3,
+			Identifier: 3,
 			Title: 'test-module/resource.txt',
 			ShortTitle: 'test-module/resource.txt',
 			Type: 1,
@@ -578,7 +578,7 @@ test('uploadCourseContent skips updates on dry run', async t => {
 		url: 'https://example.com/d2l/api/lp/1.23/courses/123'
 	}, {
 		body: {
-			Id: '123',
+			Identifier: '123',
 			Name: 'Org Unit',
 			Path: '/content/course123/'
 		}
@@ -587,7 +587,7 @@ test('uploadCourseContent skips updates on dry run', async t => {
 		url: 'https://example.com/d2l/api/le/1.34/123/content/root/'
 	}, {
 		body: [{
-			Id: 1,
+			ModuleId: 1,
 			Title: 'Test Module',
 			ShortTitle: 'Test Module',
 			Type: 0,
@@ -605,7 +605,7 @@ test('uploadCourseContent skips updates on dry run', async t => {
 		url: 'https://example.com/d2l/api/le/1.34/123/content/modules/1/structure/'
 	}, {
 		body: [{
-			Id: 2,
+			Identifier: 2,
 			Title: 'Test Topic',
 			ShortTitle: 'Test Topic',
 			Type: 1,
@@ -618,7 +618,7 @@ test('uploadCourseContent skips updates on dry run', async t => {
 			IsExempt: false,
 			OpenAsExternalResource: false
 		}, {
-			Id: 3,
+			Identifier: 3,
 			Title: 'test-module/resource.txt',
 			ShortTitle: 'test-module/resource.txt',
 			Type: 1,
