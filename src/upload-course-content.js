@@ -5,18 +5,19 @@ const FormData = require('form-data');
 
 module.exports = class UploadCourseContent {
 	constructor(
-		fetch = require('node-fetch'),
-		ValenceAuth = require('./auth/valence-auth'),
-		contentPath = './content'
+		{
+			contentDirectory,
+			manifestPath,
+			isDryRun
+		},
+		valence,
+		fetch = require('node-fetch')
 	) {
 		this._fetch = fetch;
-		this._valence = new ValenceAuth({
-			appId: process.env.VALENCE_APPID,
-			appKey: process.env.VALENCE_APPKEY,
-			userId: process.env.VALENCE_USERID,
-			userKey: process.env.VALENCE_APPKEY
-		});
-		this._contentPath = contentPath;
+		this._valence = valence;
+		this._contentDir = contentDirectory;
+		this._manifestPath = manifestPath;
+		this._dryRun = isDryRun;
 
 		this._markdownRegex = /.md$/i;
 	}
@@ -34,7 +35,7 @@ module.exports = class UploadCourseContent {
 		console.log(`Running in user context: ${whoAmI.UniqueName}`);
 
 		const orgUnit = await this._getOrgUnit(instanceUrl, orgUnitId);
-		console.log(`Found course offering: ${orgUnit.Name}`);
+		console.log(`Found course offering: ${orgUnit.Name} with id ${orgUnit.Identifier}`);
 
 		const manifest = await this._getManifest();
 
@@ -94,12 +95,17 @@ module.exports = class UploadCourseContent {
 
 	async _createModule(instanceUrl, orgUnit, module, parentModule) {
 		const url = parentModule
-			? new URL(`/d2l/api/le/1.34/${orgUnit.Id}/content/modules/${parentModule.Id}/structure/`, instanceUrl)
-			: new URL(`/d2l/api/le/1.34/${orgUnit.Id}/content/root/`, instanceUrl);
+			? new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/modules/${parentModule.Id}/structure/`, instanceUrl)
+			: new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/root/`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'POST');
 
 		const descriptionFileName = module.descriptionFileName.replace(this._markdownRegex, '.html');
-		const description = await fs.promises.readFile(`${this._contentPath}/${descriptionFileName}`);
+		const description = await fs.promises.readFile(`${this._contentDir}/${descriptionFileName}`);
+
+		if (this._dryRun) {
+			console.log(`Creating module ${module.title}`);
+			return UploadCourseContent.DRY_RUN_FAKE_MODULE;
+		}
 
 		const response = await this._fetch(
 			signedUrl,
@@ -119,16 +125,15 @@ module.exports = class UploadCourseContent {
 					}
 				})
 			});
-
 		return response.json();
 	}
 
 	async _createTopic(instanceUrl, orgUnit, topic, parentModule, isHidden = false) {
-		const url = new URL(`/d2l/api/le/1.34/${orgUnit.Id}/content/modules/${parentModule.Id}/structure/`, instanceUrl);
+		const url = new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/modules/${parentModule.Id}/structure/`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'POST');
 
 		const fileName = topic.fileName.replace(this._markdownRegex, '.html');
-		const fileContent = await fs.promises.readFile(`${this._contentPath}/${fileName}`);
+		const fileContent = await fs.promises.readFile(`${this._contentDir}/${fileName}`);
 
 		const formData = new FormData();
 		formData.append(
@@ -154,6 +159,11 @@ module.exports = class UploadCourseContent {
 			{ contentType: 'text/html', filename: `${fileName}` }
 		);
 
+		if (this._dryRun) {
+			console.log(`Creating ${topic.title} with file ${orgUnit.Path}${fileName}`);
+			return {};
+		}
+
 		const response = await this._fetch(
 			signedUrl,
 			{
@@ -161,16 +171,15 @@ module.exports = class UploadCourseContent {
 				headers: `multipart/mixed; ${formData.getBoundary()}`,
 				body: formData
 			});
-
 		return response.json();
 	}
 
 	async _updateModule(instanceUrl, orgUnit, module, lmsModule, isHidden = false) {
-		const url = new URL(`/d2l/api/le/1.34/${orgUnit.Id}/content/modules/${lmsModule.Id}`, instanceUrl);
+		const url = new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/modules/${lmsModule.Id}`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'PUT');
 
 		const descriptionFileName = module.descriptionFileName.replace(this._markdownRegex, '.html');
-		const description = await fs.promises.readFile(`${this._contentPath}/${descriptionFileName}`);
+		const description = await fs.promises.readFile(`${this._contentDir}/${descriptionFileName}`);
 
 		const body = {
 			...lmsModule,
@@ -185,18 +194,22 @@ module.exports = class UploadCourseContent {
 			}
 		};
 
-		await this._fetch(
-			signedUrl,
-			{
-				method: 'PUT',
-				body: JSON.stringify(body)
-			});
+		if (this._dryRun) {
+			console.log(`Updating module ${module.title}`);
+		} else {
+			await this._fetch(
+				signedUrl,
+				{
+					method: 'PUT',
+					body: JSON.stringify(body)
+				});
+		}
 
 		return body;
 	}
 
 	async _updateTopic(instanceUrl, orgUnit, topic, lmsTopic) {
-		const url = new URL(`/d2l/api/le/1.34/${orgUnit.Id}/content/topics/${lmsTopic.Id}`, instanceUrl);
+		const url = new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/topics/${lmsTopic.Id}`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'PUT');
 
 		const fileName = topic.fileName.replace(this._markdownRegex, '.html');
@@ -213,17 +226,9 @@ module.exports = class UploadCourseContent {
 			}
 		};
 
-		await this._fetch(
-			signedUrl,
-			{
-				method: 'PUT',
-				body: JSON.stringify(body)
-			});
-
-		const fileUrl = new URL(`/d2l/api/le/1.34/${orgUnit.Id}/content/topics/${lmsTopic.Id}/file`, instanceUrl);
+		const fileUrl = new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/topics/${lmsTopic.Id}/file`, instanceUrl);
 		const signedFileUrl = this._valence.createAuthenticatedUrl(fileUrl, 'PUT');
-
-		const fileContent = await fs.promises.readFile(`${this._contentPath}/${fileName}`);
+		const fileContent = await fs.promises.readFile(`${this._contentDir}/${fileName}`);
 
 		const formData = new FormData();
 		formData.append(
@@ -232,23 +237,34 @@ module.exports = class UploadCourseContent {
 			{ contentType: 'text/html', filename: `${fileName}` }
 		);
 
-		await this._fetch(
-			signedFileUrl,
-			{
-				method: 'PUT',
-				headers: {
-					'Content-Type': 'multipart/mixed'
-				},
-				body: formData
-			});
+		if (this._dryRun) {
+			console.log(`Updating ${topic.title} and file ${fileName}`);
+		} else {
+			await this._fetch(
+				signedUrl,
+				{
+					method: 'PUT',
+					body: JSON.stringify(body)
+				});
+
+			await this._fetch(
+				signedFileUrl,
+				{
+					method: 'PUT',
+					headers: {
+						'Content-Type': 'multipart/mixed'
+					},
+					body: formData
+				});
+		}
 
 		return body;
 	}
 
 	async _getContent(instanceUrl, orgUnit, parentModule = null) {
 		const url = parentModule
-			? new URL(`/d2l/api/le/1.34/${orgUnit.Id}/content/modules/${parentModule.Id}/structure/`, instanceUrl)
-			: new URL(`/d2l/api/le/1.34/${orgUnit.Id}/content/root/`, instanceUrl);
+			? new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/modules/${parentModule.Id}/structure/`, instanceUrl)
+			: new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/root/`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'GET');
 
 		const response = await this._fetch(signedUrl);
@@ -257,7 +273,7 @@ module.exports = class UploadCourseContent {
 	}
 
 	async _getManifest() {
-		const manifest = await fs.promises.readFile(`${this._contentPath}/manifest.json`);
+		const manifest = await fs.promises.readFile(this._manifestPath);
 
 		return JSON.parse(manifest.toString('utf-8'));
 	}
@@ -278,5 +294,9 @@ module.exports = class UploadCourseContent {
 		const response = await this._fetch(signedUrl);
 
 		return response.json();
+	}
+
+	static get DRY_RUN_FAKE_MODULE() {
+		return {Id: 23487};
 	}
 };

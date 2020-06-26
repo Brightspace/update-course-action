@@ -15,7 +15,7 @@ jobs:
     - uses: Brightspace/third-party-actions@actions/setup-node
       with:
         node-version: '12.x'
-    - name: Test
+    - name: Build
       run: |
         npm ci
         npm test

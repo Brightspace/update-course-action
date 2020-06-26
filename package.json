@@ -3,15 +3,31 @@
   "version": "1.0.0",
   "main": "src/index.js",
   "scripts": {
-    "test": "xo -v && ava -v"
+    "test": "xo -v && ava -v",
+    "build": "ncc build src/index.js"
   },
   "dependencies": {
+    "@actions/core": "^1.2.4",
+    "@actions/github": "^3.0.0",
     "form-data": "^3.0.0",
-    "node-fetch": "^2.6.0"
+    "node-fetch": "^2.6.0",
+    "validator": "^13.1.1"
   },
   "devDependencies": {
     "ava": "^3.9.0",
     "fetch-mock": "^9.10.1",
     "xo": "^0.32.0"
-  }
+  },
+  "description": "Updates the course content of a Brightspace course",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Brightspace/update-course-action.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/Brightspace/update-course-action/issues"
+  },
+  "homepage": "https://github.com/Brightspace/update-course-action#readme"
 }
