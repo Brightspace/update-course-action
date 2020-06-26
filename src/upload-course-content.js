@@ -180,7 +180,9 @@ module.exports = class UploadCourseContent {
 			signedUrl,
 			{
 				method: 'POST',
-				headers: `multipart/mixed; ${formData.getBoundary()}`,
+				headers: {
+					'Content-Type': `multipart/mixed; ${formData.getBoundary()}`
+				},
 				body: formData
 			});
 
@@ -270,7 +272,7 @@ module.exports = class UploadCourseContent {
 			{
 				method: 'PUT',
 				headers: {
-					'Content-Type': 'multipart/mixed'
+					'Content-Type': `multipart/mixed; ${formData.getBoundary()}`
 				},
 				body: formData
 			});
