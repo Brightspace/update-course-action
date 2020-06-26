@@ -5424,7 +5424,7 @@ module.exports = class UploadCourseContent {
 			{
 				method: 'POST',
 				headers: {
-					'Content-Type': `multipart/mixed; ${formData.getBoundary()}`
+					'Content-Type': `multipart/mixed; boundary=${formData.getBoundary()}`
 				},
 				body: formData
 			});
@@ -5515,7 +5515,7 @@ module.exports = class UploadCourseContent {
 			{
 				method: 'PUT',
 				headers: {
-					'Content-Type': `multipart/mixed; ${formData.getBoundary()}`
+					'Content-Type': `multipart/mixed; boundary=${formData.getBoundary()}`
 				},
 				body: formData
 			});
