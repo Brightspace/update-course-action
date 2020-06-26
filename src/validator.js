@@ -73,7 +73,7 @@ module.exports = class ActionValidator {
 			throw new TypeError('instanceDomain must be a domain. e.g. lms.example.com');
 		}
 
-		return instanceDomain;
+		return new URL(instanceDomain);
 	}
 
 	getCourseOrgUnitId() {

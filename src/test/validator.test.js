@@ -104,7 +104,7 @@ test('instanceDomain must be a URL', t => {
 test('instanceDomain returns the value', t => {
 	const core = new MockCore({instanceDomain: 'example.com'});
 	const validator = new Validator(core);
-	t.is('https://example.com', validator.getInstanceDomain());
+	t.deepEqual(new URL('https://example.com'), validator.getInstanceDomain());
 });
 
 test('courseOrgUnitId is required', t => {
