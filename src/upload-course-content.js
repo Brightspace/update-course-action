@@ -95,7 +95,7 @@ module.exports = class UploadCourseContent {
 
 	async _createModule(instanceUrl, orgUnit, module, parentModule) {
 		const url = parentModule
-			? new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/modules/${parentModule.ModuleId}/structure/`, instanceUrl)
+			? new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/modules/${parentModule.Id}/structure/`, instanceUrl)
 			: new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/root/`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'POST');
 
@@ -129,7 +129,7 @@ module.exports = class UploadCourseContent {
 	}
 
 	async _createTopic(instanceUrl, orgUnit, topic, parentModule, isHidden = false) {
-		const url = new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/modules/${parentModule.ModuleId}/structure/`, instanceUrl);
+		const url = new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/modules/${parentModule.Id}/structure/`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'POST');
 
 		const fileName = topic.fileName.replace(this._markdownRegex, '.html');
@@ -175,7 +175,7 @@ module.exports = class UploadCourseContent {
 	}
 
 	async _updateModule(instanceUrl, orgUnit, module, lmsModule, isHidden = false) {
-		const url = new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/modules/${lmsModule.ModuleId}`, instanceUrl);
+		const url = new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/modules/${lmsModule.Id}`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'PUT');
 
 		const descriptionFileName = module.descriptionFileName.replace(this._markdownRegex, '.html');
@@ -263,7 +263,7 @@ module.exports = class UploadCourseContent {
 
 	async _getContent(instanceUrl, orgUnit, parentModule = null) {
 		const url = parentModule
-			? new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/modules/${parentModule.ModuleId}/structure/`, instanceUrl)
+			? new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/modules/${parentModule.Id}/structure/`, instanceUrl)
 			: new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/root/`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'GET');
 
@@ -297,6 +297,6 @@ module.exports = class UploadCourseContent {
 	}
 
 	static get DRY_RUN_FAKE_MODULE() {
-		return {ModuleId: 23487};
+		return {Id: 23487};
 	}
 };

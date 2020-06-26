@@ -63,7 +63,7 @@ test('uploadCourseContent creates module, resource, and topic', async t => {
 
 		return true;
 	}, {
-		ModuleId: 1,
+		Id: 1,
 		ShortTitle: 'Test Module',
 		Type: 0,
 		ModuleStartDate: null,
@@ -189,7 +189,7 @@ test('uploadCourseContent skips creation on dry run', async t => {
 		body: ''
 	});
 	fetch.get({
-		url: `https://example.com/d2l/api/le/1.34/123/content/modules/${UploadCourseContent.DRY_RUN_FAKE_MODULE.ModuleId}/structure/`
+		url: `https://example.com/d2l/api/le/1.34/123/content/modules/${UploadCourseContent.DRY_RUN_FAKE_MODULE.Id}/structure/`
 	}, {
 		body: ''
 	});
@@ -225,7 +225,7 @@ test('uploadCourseContent updates module, creates resource and topic', async t =
 		url: 'https://example.com/d2l/api/le/1.34/123/content/root/'
 	}, {
 		body: [{
-			ModuleId: 1,
+			Id: 1,
 			Type: 0,
 			Title: 'Test Module',
 			ModuleStartDate: null,
@@ -244,7 +244,7 @@ test('uploadCourseContent updates module, creates resource and topic', async t =
 		}
 
 		t.deepEqual(JSON.parse(options.body), {
-			ModuleId: 1,
+			Id: 1,
 			Title: 'Test Module',
 			ShortTitle: 'Test Module',
 			Type: 0,
@@ -373,7 +373,7 @@ test('uploadCourseContent updates module, resource, and topic', async t => {
 		url: 'https://example.com/d2l/api/le/1.34/123/content/root/'
 	}, {
 		body: [{
-			ModuleId: 1,
+			Id: 1,
 			Title: 'Test Module',
 			ShortTitle: 'Test Module',
 			Type: 0,
@@ -393,7 +393,7 @@ test('uploadCourseContent updates module, resource, and topic', async t => {
 		}
 
 		t.deepEqual(JSON.parse(options.body), {
-			ModuleId: 1,
+			Id: 1,
 			Title: 'Test Module',
 			ShortTitle: 'Test Module',
 			Type: 0,
@@ -587,7 +587,7 @@ test('uploadCourseContent skips updates on dry run', async t => {
 		url: 'https://example.com/d2l/api/le/1.34/123/content/root/'
 	}, {
 		body: [{
-			ModuleId: 1,
+			Id: 1,
 			Title: 'Test Module',
 			ShortTitle: 'Test Module',
 			Type: 0,
