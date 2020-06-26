@@ -90,6 +90,8 @@ test('uploadCourseContent creates module, resource, and topic', async t => {
 			return false;
 		}
 
+		t.is(options.headers['Content-Type'], `multipart/mixed; boundary=${formdata.getBoundary()}`);
+
 		t.is(formdata.getBuffer().toString('utf-8'), `--${formdata.getBoundary()}\r\n`
 			+ 'Content-Disposition: form-data; name=""\r\n'
 			+ 'Content-Type: application/json\r\n\r\n'
@@ -129,6 +131,8 @@ test('uploadCourseContent creates module, resource, and topic', async t => {
 			return false;
 		}
 
+		t.is(options.headers['Content-Type'], `multipart/mixed; boundary=${formdata.getBoundary()}`);
+
 		t.is(formdata.getBuffer().toString('utf-8'), `--${formdata.getBoundary()}\r\n`
 			+ 'Content-Disposition: form-data; name=""\r\n'
 			+ 'Content-Type: application/json\r\n\r\n'
@@ -156,7 +160,7 @@ test('uploadCourseContent creates module, resource, and topic', async t => {
 		}
 	});
 
-	const uploader = new UploadCourseContent({contentDirectory, manifestPath, isDryRun: false}, MockValence, fetch);
+	const uploader = new UploadCourseContent({ contentDirectory, manifestPath, isDryRun: false }, MockValence, fetch);
 
 	await uploader.uploadCourseContent(url, 123);
 
@@ -194,7 +198,7 @@ test('uploadCourseContent skips creation on dry run', async t => {
 		body: ''
 	});
 
-	const uploader = new UploadCourseContent({contentDirectory, manifestPath, isDryRun: true}, MockValence, fetch);
+	const uploader = new UploadCourseContent({ contentDirectory, manifestPath, isDryRun: true }, MockValence, fetch);
 
 	await uploader.uploadCourseContent(url, 123);
 
@@ -342,7 +346,7 @@ test('uploadCourseContent updates module, creates resource and topic', async t =
 		}
 	});
 
-	const uploader = new UploadCourseContent({contentDirectory, manifestPath, isDryRun: false}, MockValence, fetch);
+	const uploader = new UploadCourseContent({ contentDirectory, manifestPath, isDryRun: false }, MockValence, fetch);
 
 	await uploader.uploadCourseContent(url, 123);
 
@@ -556,7 +560,7 @@ test('uploadCourseContent updates module, resource, and topic', async t => {
 		status: 200
 	});
 
-	const uploader = new UploadCourseContent({contentDirectory, manifestPath, isDryRun: false}, MockValence, fetch);
+	const uploader = new UploadCourseContent({ contentDirectory, manifestPath, isDryRun: false }, MockValence, fetch);
 
 	await uploader.uploadCourseContent(url, 123);
 
@@ -633,7 +637,7 @@ test('uploadCourseContent skips updates on dry run', async t => {
 		}]
 	});
 
-	const uploader = new UploadCourseContent({contentDirectory, manifestPath, isDryRun: true}, MockValence, fetch);
+	const uploader = new UploadCourseContent({ contentDirectory, manifestPath, isDryRun: true }, MockValence, fetch);
 
 	await uploader.uploadCourseContent(url, 123);
 
