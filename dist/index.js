@@ -2461,30 +2461,97 @@ decimal['pl-Pl'] = decimal['pl-PL'];
 /***/ }),
 
 /***/ 85:
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, __unusedexports, __webpack_require__) {
 
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = isBtcAddress;
+const validator = __webpack_require__(448);
 
-var _assertString = _interopRequireDefault(__webpack_require__(576));
+module.exports = class ActionValidator {
+	constructor(core) {
+		this.core = core;
+	}
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	getValenceInput() {
+		const appId = this.core.getInput('valenceAppId');
+		if (!validator.isLength(appId, {min: 1, max: 100})) {
+			throw new TypeError('valenceAppId must be a string between 1 and 100 characters');
+		}
 
-// supports Bech32 addresses
-var btc = /^(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,39}$/;
+		const appKey = this.core.getInput('valenceAppKey');
+		validator.isLength(appKey, {min: 1, max: 100});
+		if (!validator.isLength(appKey, {min: 1, max: 100})) {
+			throw new TypeError('valenceAppKey must be a string between 1 and 100 characters');
+		}
 
-function isBtcAddress(str) {
-  (0, _assertString.default)(str);
-  return btc.test(str);
-}
+		const userId = this.core.getInput('valenceUserId');
+		validator.isLength(userId, {min: 1, max: 100});
+		if (!validator.isLength(userId, {min: 1, max: 100})) {
+			throw new TypeError('valenceUserId must be a string between 1 and 100 characters');
+		}
 
-module.exports = exports.default;
-module.exports.default = exports.default;
+		const userKey = this.core.getInput('valenceUserKey');
+		validator.isLength(userKey, {min: 1, max: 100});
+		if (!validator.isLength(userKey, {min: 1, max: 100})) {
+			throw new TypeError('valenceUserKey must be a string between 1 and 100 characters');
+		}
+
+		return {
+			appId,
+			appKey,
+			userId,
+			userKey
+		};
+	}
+
+	getIsDryRun() {
+		const isDryRun = this.core.getInput('dryRun');
+		if (!validator.isBoolean(isDryRun)) {
+			throw new TypeError('dryRun must be a boolean');
+		}
+
+		return validator.toBoolean(isDryRun);
+	}
+
+	getManifestPath() {
+		const manifestPath = this.core.getInput('manifestPath');
+		if (!validator.isLength(manifestPath, {min: 1, max: 200}) || !manifestPath.endsWith('.json')) {
+			throw new TypeError('manifestPath must be a path a .json file');
+		}
+
+		return manifestPath;
+	}
+
+	getContentDirectory() {
+		const contentDirectory = this.core.getInput('contentDirectory');
+		if (!validator.isLength(contentDirectory, {min: 1, max: 200})) {
+			throw new TypeError('contentDirectory must be a string between 1 and 200 characters');
+		}
+
+		return contentDirectory;
+	}
+
+	getInstanceDomain() {
+		const instanceDomain = 'https://' + this.core.getInput('instanceDomain');
+		// eslint-disable-next-line camelcase
+		if (!validator.isURL(instanceDomain, {require_protocol: true, require_host: true})) {
+			throw new TypeError('instanceDomain must be a domain. e.g. lms.example.com');
+		}
+
+		return instanceDomain;
+	}
+
+	getCourseOrgUnitId() {
+		const courseOrgUnitId = this.core.getInput('courseOrgUnitId');
+		if (!validator.isInt(courseOrgUnitId)) {
+			throw new TypeError('courseOrgUnitId must be an integer');
+		}
+
+		return validator.toInt(courseOrgUnitId);
+	}
+};
+
 
 /***/ }),
 
@@ -5356,7 +5423,7 @@ var _isEthereumAddress = _interopRequireDefault(__webpack_require__(360));
 
 var _isCurrency = _interopRequireDefault(__webpack_require__(465));
 
-var _isBtcAddress = _interopRequireDefault(__webpack_require__(85));
+var _isBtcAddress = _interopRequireDefault(__webpack_require__(839));
 
 var _isISO = _interopRequireDefault(__webpack_require__(902));
 
@@ -7765,7 +7832,7 @@ module.exports.default = exports.default;
 const core = __webpack_require__(330);
 const ValenceAuth = __webpack_require__(462);
 const UploadCourseContent = __webpack_require__(144);
-const Validator = __webpack_require__(448);
+const Validator = __webpack_require__(85);
 
 async function run() {
 	const validator = new Validator(core);
@@ -7963,6 +8030,34 @@ module.exports.default = exports.default;
 /***/ (function(module) {
 
 module.exports = require("url");
+
+/***/ }),
+
+/***/ 839:
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = isBtcAddress;
+
+var _assertString = _interopRequireDefault(__webpack_require__(576));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// supports Bech32 addresses
+var btc = /^(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,39}$/;
+
+function isBtcAddress(str) {
+  (0, _assertString.default)(str);
+  return btc.test(str);
+}
+
+module.exports = exports.default;
+module.exports.default = exports.default;
 
 /***/ }),
 

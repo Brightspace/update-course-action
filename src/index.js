@@ -3,7 +3,7 @@
 const core = require('@actions/core');
 const ValenceAuth = require('./auth/valence-auth');
 const UploadCourseContent = require('./upload-course-content');
-const Validator = require('validator');
+const Validator = require('./validator');
 
 async function run() {
 	const validator = new Validator(core);
