@@ -10,16 +10,11 @@ module.exports = class UploadCourseContent {
 			manifestPath,
 			isDryRun
 		},
-		ValenceAuth = require('./auth/valence-auth'),
+		valence,
 		fetch = require('node-fetch')
 	) {
 		this._fetch = fetch;
-		this._valence = new ValenceAuth({
-			appId: process.env.VALENCE_APPID,
-			appKey: process.env.VALENCE_APPKEY,
-			userId: process.env.VALENCE_USERID,
-			userKey: process.env.VALENCE_APPKEY
-		});
+		this._valence = valence;
 		this._contentPath = contentPath;
 		this._manifestPath = manifestPath;
 		this._dryRun = isDryRun;

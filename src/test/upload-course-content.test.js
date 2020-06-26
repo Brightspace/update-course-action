@@ -11,11 +11,11 @@ const UploadCourseContent = require('../upload-course-content');
 const contentPath = path.join(__dirname, 'content');
 const manifestPath = path.join(__dirname, 'content', '/manifest.json');
 
-class MockValence {
+const MockValence = {
 	createAuthenticatedUrl(url) {
 		return url;
 	}
-}
+};
 
 test('uploadCourseContent creates module, resource, and topic', async t => {
 	const url = new URL('https://example.com');
