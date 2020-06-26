@@ -14,6 +14,10 @@
           "isRequired": true
         },
         {
+          "title": "Test Quiz",
+          "type": "quiz"
+        },
+        {
           "type": "resource",
           "fileName": "test-module/resource.txt"
         }

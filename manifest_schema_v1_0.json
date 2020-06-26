@@ -35,6 +35,9 @@
                 "$ref": "#/definitions/module"
               },
               {
+                "$ref": "#/definitions/quiz"
+              },
+              {
                 "$ref": "#/definitions/resource"
               },
               {
@@ -48,6 +51,26 @@
         "title",
         "type",
         "children"
+      ]
+    },
+    "quiz": {
+      "type": "object",
+      "additionalItems": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "quiz"
+          ]
+        },
+        "title": {
+          "type": "string",
+          "title": "The name of the quiz"
+        }
+      },
+      "required": [
+        "title",
+        "type"
       ]
     },
     "resource": {
