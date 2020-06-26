@@ -209,7 +209,7 @@ module.exports = class UploadCourseContent {
 	}
 
 	async _updateTopic(instanceUrl, orgUnit, topic, lmsTopic) {
-		const url = new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/topics/${lmsTopic.Identifier}`, instanceUrl);
+		const url = new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/topics/${lmsTopic.Id}`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'PUT');
 
 		const fileName = topic.fileName.replace(this._markdownRegex, '.html');
@@ -226,7 +226,7 @@ module.exports = class UploadCourseContent {
 			}
 		};
 
-		const fileUrl = new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/topics/${lmsTopic.Identifier}/file`, instanceUrl);
+		const fileUrl = new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/topics/${lmsTopic.Id}/file`, instanceUrl);
 		const signedFileUrl = this._valence.createAuthenticatedUrl(fileUrl, 'PUT');
 		const fileContent = await fs.promises.readFile(`${this._contentDir}/${fileName}`);
 

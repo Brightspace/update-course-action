@@ -103,7 +103,7 @@ test('uploadCourseContent creates module, resource, and topic', async t => {
 		return true;
 	}, {
 		body: {
-			Identifier: 2,
+			Id: 2,
 			Title: 'Test Topic',
 			Type: 1,
 			TopicType: 1,
@@ -142,7 +142,7 @@ test('uploadCourseContent creates module, resource, and topic', async t => {
 		return true;
 	}, {
 		body: {
-			Identifier: 3,
+			Id: 3,
 			Title: 'test-module/resource.txt',
 			Type: 1,
 			TopicType: 1,
@@ -290,7 +290,7 @@ test('uploadCourseContent updates module, creates resource and topic', async t =
 		return true;
 	}, {
 		body: {
-			Identifier: 2,
+			Id: 2,
 			Title: 'Test Topic',
 			ShortTitle: 'Test Topic',
 			Type: 1,
@@ -327,7 +327,7 @@ test('uploadCourseContent updates module, creates resource and topic', async t =
 		return true;
 	}, {
 		body: {
-			Identifier: 3,
+			Id: 3,
 			Title: 'test-module/resource.txt',
 			ShortTitle: 'test-module/resource.txt',
 			Type: 1,
@@ -415,7 +415,7 @@ test('uploadCourseContent updates module, resource, and topic', async t => {
 		url: 'https://example.com/d2l/api/le/1.34/123/content/modules/1/structure/'
 	}, {
 		body: [{
-			Identifier: 2,
+			Id: 2,
 			Title: 'Test Topic',
 			ShortTitle: 'Test Topic',
 			Type: 1,
@@ -428,7 +428,7 @@ test('uploadCourseContent updates module, resource, and topic', async t => {
 			IsExempt: false,
 			OpenAsExternalResource: false
 		}, {
-			Identifier: 3,
+			Id: 3,
 			Title: 'test-module/resource.txt',
 			ShortTitle: 'test-module/resource.txt',
 			Type: 1,
@@ -448,7 +448,7 @@ test('uploadCourseContent updates module, resource, and topic', async t => {
 		}
 
 		t.deepEqual(JSON.parse(options.body), {
-			Identifier: 2,
+			Id: 2,
 			Title: 'Test Topic',
 			ShortTitle: 'Test Topic',
 			Type: 1,
@@ -467,7 +467,7 @@ test('uploadCourseContent updates module, resource, and topic', async t => {
 		return true;
 	}, {
 		body: {
-			Identifier: 2,
+			Id: 2,
 			Title: 'Test Topic',
 			Type: 1,
 			TopicType: 1,
@@ -506,7 +506,7 @@ test('uploadCourseContent updates module, resource, and topic', async t => {
 		}
 
 		t.deepEqual(JSON.parse(options.body), {
-			Identifier: 3,
+			Id: 3,
 			Title: 'test-module/resource.txt',
 			ShortTitle: 'test-module/resource.txt',
 			Type: 1,
@@ -525,7 +525,7 @@ test('uploadCourseContent updates module, resource, and topic', async t => {
 		return true;
 	}, {
 		body: {
-			Identifier: 3,
+			Id: 3,
 			Title: 'test-module/resource.txt',
 			ShortTitle: 'test-module/resource.txt',
 			Type: 1,
@@ -605,7 +605,7 @@ test('uploadCourseContent skips updates on dry run', async t => {
 		url: 'https://example.com/d2l/api/le/1.34/123/content/modules/1/structure/'
 	}, {
 		body: [{
-			Identifier: 2,
+			Id: 2,
 			Title: 'Test Topic',
 			ShortTitle: 'Test Topic',
 			Type: 1,
@@ -618,7 +618,7 @@ test('uploadCourseContent skips updates on dry run', async t => {
 			IsExempt: false,
 			OpenAsExternalResource: false
 		}, {
-			Identifier: 3,
+			Id: 3,
 			Title: 'test-module/resource.txt',
 			ShortTitle: 'test-module/resource.txt',
 			Type: 1,
