@@ -24,7 +24,7 @@ module.exports = class UploadCourseContent {
 
 	/**
 	 * Uploads course content to a Brightspace LMS
-	 * @param {URL} instanceUrl
+	 * @param {string} instanceUrl
 	 * @param {number} orgUnitId
 	 */
 	async uploadCourseContent(
@@ -38,6 +38,7 @@ module.exports = class UploadCourseContent {
 		console.log(`Found course offering: ${orgUnit.Name} with id ${orgUnit.Identifier}`);
 
 		const manifest = await this._getManifest();
+		console.log('Loaded manifest');
 
 		// Order matters on creates, so not using .map()
 		for (const module of manifest.modules) {
@@ -47,6 +48,8 @@ module.exports = class UploadCourseContent {
 	}
 
 	async _processModule(instanceUrl, orgUnit, module, parentModule) {
+		console.log(`Processing module: ${module.title}`);
+
 		const items = await this._getContent(instanceUrl, orgUnit, parentModule);
 		let self = Array.isArray(items) && items.find(m => m.Type === 0 && m.Title === module.title);
 
@@ -72,16 +75,21 @@ module.exports = class UploadCourseContent {
 	}
 
 	async _processResource(instanceUrl, orgUnit, resource, parentModule) {
+		console.log(`Processing resource: ${resource.fileName}`);
+
 		const topic = {
 			...resource,
 			...{
 				title: resource.fileName
 			}
 		};
+
 		return this._processTopic(instanceUrl, orgUnit, topic, parentModule, true);
 	}
 
 	async _processTopic(instanceUrl, orgUnit, topic, parentModule, isHidden = false) {
+		console.log(`Processing topic: ${topic.title}`);
+
 		const topics = await this._getContent(instanceUrl, orgUnit, parentModule);
 		const self = Array.isArray(topics) && topics.find(t => t.Type === 1 && t.TopicType === 1 && t.Title === topic.title);
 
@@ -94,6 +102,8 @@ module.exports = class UploadCourseContent {
 	}
 
 	async _createModule(instanceUrl, orgUnit, module, parentModule) {
+		console.log(`Creating module: ${module.title}`);
+
 		const url = parentModule
 			? new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/modules/${parentModule.Id}/structure/`, instanceUrl)
 			: new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/root/`, instanceUrl);
@@ -103,7 +113,6 @@ module.exports = class UploadCourseContent {
 		const description = await fs.promises.readFile(`${this._contentDir}/${descriptionFileName}`);
 
 		if (this._dryRun) {
-			console.log(`Creating module ${module.title}`);
 			return UploadCourseContent.DRY_RUN_FAKE_MODULE;
 		}
 
@@ -125,14 +134,18 @@ module.exports = class UploadCourseContent {
 					}
 				})
 			});
+
 		return response.json();
 	}
 
 	async _createTopic(instanceUrl, orgUnit, topic, parentModule, isHidden = false) {
+		const fileName = topic.fileName.replace(this._markdownRegex, '.html');
+
+		console.log(`Creating topic: ${topic.title} with file: ${orgUnit.Path}${fileName}`);
+
 		const url = new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/modules/${parentModule.Id}/structure/`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'POST');
 
-		const fileName = topic.fileName.replace(this._markdownRegex, '.html');
 		const fileContent = await fs.promises.readFile(`${this._contentDir}/${fileName}`);
 
 		const formData = new FormData();
@@ -160,7 +173,6 @@ module.exports = class UploadCourseContent {
 		);
 
 		if (this._dryRun) {
-			console.log(`Creating ${topic.title} with file ${orgUnit.Path}${fileName}`);
 			return {};
 		}
 
@@ -168,13 +180,18 @@ module.exports = class UploadCourseContent {
 			signedUrl,
 			{
 				method: 'POST',
-				headers: `multipart/mixed; ${formData.getBoundary()}`,
+				headers: {
+					'Content-Type': `multipart/mixed; ${formData.getBoundary()}`
+				},
 				body: formData
 			});
+
 		return response.json();
 	}
 
 	async _updateModule(instanceUrl, orgUnit, module, lmsModule, isHidden = false) {
+		console.log(`Updating module ${module.title}`);
+
 		const url = new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/modules/${lmsModule.Id}`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'PUT');
 
@@ -195,15 +212,15 @@ module.exports = class UploadCourseContent {
 		};
 
 		if (this._dryRun) {
-			console.log(`Updating module ${module.title}`);
-		} else {
-			await this._fetch(
-				signedUrl,
-				{
-					method: 'PUT',
-					body: JSON.stringify(body)
-				});
+			return body;
 		}
+
+		await this._fetch(
+			signedUrl,
+			{
+				method: 'PUT',
+				body: JSON.stringify(body)
+			});
 
 		return body;
 	}
@@ -213,6 +230,8 @@ module.exports = class UploadCourseContent {
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'PUT');
 
 		const fileName = topic.fileName.replace(this._markdownRegex, '.html');
+
+		console.log(`Updating ${topic.title} and file ${fileName}`);
 
 		const body = {
 			...lmsTopic,
@@ -238,25 +257,25 @@ module.exports = class UploadCourseContent {
 		);
 
 		if (this._dryRun) {
-			console.log(`Updating ${topic.title} and file ${fileName}`);
-		} else {
-			await this._fetch(
-				signedUrl,
-				{
-					method: 'PUT',
-					body: JSON.stringify(body)
-				});
-
-			await this._fetch(
-				signedFileUrl,
-				{
-					method: 'PUT',
-					headers: {
-						'Content-Type': 'multipart/mixed'
-					},
-					body: formData
-				});
+			return body;
 		}
+
+		await this._fetch(
+			signedUrl,
+			{
+				method: 'PUT',
+				body: JSON.stringify(body)
+			});
+
+		await this._fetch(
+			signedFileUrl,
+			{
+				method: 'PUT',
+				headers: {
+					'Content-Type': `multipart/mixed; ${formData.getBoundary()}`
+				},
+				body: formData
+			});
 
 		return body;
 	}
@@ -297,6 +316,6 @@ module.exports = class UploadCourseContent {
 	}
 
 	static get DRY_RUN_FAKE_MODULE() {
-		return {Id: 23487};
+		return { Id: 23487 };
 	}
 };
