@@ -55,6 +55,10 @@ test('creates topic', async t => {
 			return false;
 		}
 
+		t.deepEqual(options.headers, {
+			'Content-Type': `multipart/mixed; ${formdata.getBoundary()}`
+		});
+
 		t.is(formdata.getBuffer().toString('utf-8'), `--${formdata.getBoundary()}\r\n`
 			+ 'Content-Disposition: form-data; name=""\r\n'
 			+ 'Content-Type: application/json\r\n\r\n'
@@ -116,6 +120,10 @@ test('creates hidden topic', async t => {
 		if (!formdata.getBuffer().toString('utf-8').includes('resource.txt')) {
 			return false;
 		}
+
+		t.deepEqual(options.headers, {
+			'Content-Type': `multipart/mixed; ${formdata.getBoundary()}`
+		});
 
 		t.is(formdata.getBuffer().toString('utf-8'), `--${formdata.getBoundary()}\r\n`
 			+ 'Content-Disposition: form-data; name=""\r\n'

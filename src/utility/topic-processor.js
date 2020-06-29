@@ -67,7 +67,9 @@ module.exports = class TopicProcessor {
 			signedUrl,
 			{
 				method: 'POST',
-				headers: `multipart/mixed; ${formData.getBoundary()}`,
+				headers: {
+					'Content-Type': `multipart/mixed; ${formData.getBoundary()}`
+				},
 				body: formData
 			});
 
