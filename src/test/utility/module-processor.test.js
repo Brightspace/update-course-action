@@ -151,7 +151,7 @@ test('creates module', async t => {
 		}
 	}
 
-	const processor = new ModuleProcessor({ contentPath: ContentPath }, MockValence, { fetch, TopicProcessor: MockTopicProcessor, QuizProcessor: MockQuizProcessor });
+	const processor = new ModuleProcessor({ contentPath: ContentPath }, MockValence, fetch, MockTopicProcessor, MockQuizProcessor);
 
 	await processor.processModule(url, OrgUnit, TestModule);
 
@@ -269,7 +269,7 @@ test('updates module', async t => {
 		}
 	}
 
-	const processor = new ModuleProcessor({ contentPath: ContentPath }, MockValence, { fetch, TopicProcessor: MockTopicProcessor, QuizProcessor: MockQuizProcessor });
+	const processor = new ModuleProcessor({ contentPath: ContentPath }, MockValence, fetch, MockTopicProcessor, MockQuizProcessor);
 
 	await processor.processModule(url, OrgUnit, TestModule);
 
@@ -397,7 +397,7 @@ test('creates submodule', async t => {
 		}
 	}
 
-	const processor = new ModuleProcessor({ contentPath: ContentPath }, MockValence, { fetch, TopicProcessor: MockTopicProcessor, QuizProcessor: MockQuizProcessor });
+	const processor = new ModuleProcessor({ contentPath: ContentPath }, MockValence, fetch, MockTopicProcessor, MockQuizProcessor);
 
 	await processor.processModule(url, OrgUnit, TestModule, {
 		Id: 1,
@@ -552,7 +552,7 @@ test('updates submodule', async t => {
 		}
 	}
 
-	const processor = new ModuleProcessor({ contentPath: ContentPath }, MockValence, { fetch, TopicProcessor: MockTopicProcessor, QuizProcessor: MockQuizProcessor });
+	const processor = new ModuleProcessor({ contentPath: ContentPath }, MockValence, fetch, MockTopicProcessor, MockQuizProcessor);
 
 	await processor.processModule(url, OrgUnit, TestModule, {
 		Id: 1,
@@ -618,7 +618,7 @@ test('creates submodule, dryrun parentModule does not exist', async t => {
 		}
 	}
 
-	const processor = new ModuleProcessor({ contentPath: ContentPath, isDryRun: true }, MockValence, { fetch, TopicProcessor: MockTopicProcessor, QuizProcessor: MockQuizProcessor });
+	const processor = new ModuleProcessor({ contentPath: ContentPath, isDryRun: true }, MockValence, fetch, MockTopicProcessor, MockQuizProcessor);
 
 	await processor.processModule(url, OrgUnit, TestModule, {
 		Id: 0

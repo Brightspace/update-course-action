@@ -5358,10 +5358,8 @@ module.exports = class UploadCourseContent {
 			isDryRun
 		},
 		valence,
-		{
-			fetch = __webpack_require__(454),
-			ModuleProcessor = __webpack_require__(903)
-		}
+		fetch = __webpack_require__(454),
+		ModuleProcessor = __webpack_require__(903)
 	) {
 		this._fetch = fetch;
 		this._valence = valence;
@@ -7868,11 +7866,9 @@ module.exports = class ModuleProcessor {
 	constructor(
 		{ contentPath, isDryRun = false },
 		valence,
-		{
-			fetch = __webpack_require__(454),
-			TopicProcessor = __webpack_require__(902),
-			QuizProcessor = __webpack_require__(131)
-		}
+		fetch = __webpack_require__(454),
+		TopicProcessor = __webpack_require__(902),
+		QuizProcessor = __webpack_require__(131)
 	) {
 		this._contentPath = contentPath;
 		this._dryRun = isDryRun;
