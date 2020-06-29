@@ -220,7 +220,7 @@ test('updates topic', async t => {
 		const formdata = new FormData(options.body);
 
 		t.deepEqual(options.headers, {
-			'Content-Type': `multipart/mixed; boundary=${formdata.getBoundary()}`
+			'Content-Type': `${formdata.getHeaders()}`
 		});
 
 		t.is(formdata.getBuffer().toString('utf-8'), `--${formdata.getBoundary()}\r\n`
@@ -319,7 +319,7 @@ test('updates hidden topic', async t => {
 		const formdata = new FormData(options.body);
 
 		t.deepEqual(options.headers, {
-			'Content-Type': `multipart/mixed; boundary=${formdata.getBoundary()}`
+			'Content-Type': `${formdata.getHeaders()}`
 		});
 
 		t.is(formdata.getBuffer().toString('utf-8'), `--${formdata.getBoundary()}\r\n`
