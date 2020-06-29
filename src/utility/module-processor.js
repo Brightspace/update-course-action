@@ -39,7 +39,7 @@ module.exports = class ModuleProcessor {
 		for (const child of module.children) {
 			switch (child.type) {
 				case 'module':
-					await this._processModule(instanceUrl, orgUnit, child, self);
+					await this.processModule(instanceUrl, orgUnit, child, self);
 					break;
 				case 'quiz':
 					await this._quizProcessor.processQuiz(instanceUrl, orgUnit, child, self);
@@ -65,20 +65,17 @@ module.exports = class ModuleProcessor {
 			: new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Identifier}/content/root/`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'POST');
 
-		const descriptionFileName = module.descriptionFileName.replace(this._markdownRegex, '.html');
-		const descriptionHtml = await fs.promises.readFile(`${this._contentPath}/${descriptionFileName}`);
-
-		if (this._dryRun) {
-			return DryRunFakeModule;
-		}
-
-		const description = ContentFactory.createRichText(descriptionHtml.toString('utf-8'), 'Html');
+		const description = await this._getDescription(module);
 
 		const createModule = ContentFactory.createModule({
 			title: module.title,
 			description,
 			dueDate: module.dueDate
 		});
+
+		if (this._dryRun) {
+			return DryRunFakeModule;
+		}
 
 		const response = await this._fetch(
 			signedUrl,
@@ -100,10 +97,7 @@ module.exports = class ModuleProcessor {
 		const url = new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Identifier}/content/modules/${lmsModule.Id}`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'PUT');
 
-		const descriptionFileName = module.descriptionFileName.replace(this._markdownRegex, '.html');
-		const descriptionHtml = await fs.promises.readFile(`${this._contentPath}/${descriptionFileName}`);
-
-		const description = ContentFactory.createRichText(descriptionHtml.toString('utf-8'), 'Html');
+		const description = await this._getDescription(module);
 
 		const body = {
 			...lmsModule,
@@ -145,13 +139,24 @@ module.exports = class ModuleProcessor {
 		return this._topicProcessor.processTopic({ instanceUrl, orgUnit, topic, parentModule, isHidden: true });
 	}
 
+	async _getDescription(module) {
+		if (!module.descriptionFileName) {
+			return ContentFactory.createRichText('', 'Html');
+		}
+
+		const descriptionFileName = module.descriptionFileName.replace(this._markdownRegex, '.html');
+		const descriptionHtml = await fs.promises.readFile(`${this._contentPath}/${descriptionFileName}`);
+
+		return ContentFactory.createRichText(descriptionHtml.toString('utf-8'), 'Html');
+	}
+
 	async _getContent(instanceUrl, orgUnit, parentModule = null) {
 		const url = parentModule
 			? new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Identifier}/content/modules/${parentModule.Id}/structure/`, instanceUrl)
 			: new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Identifier}/content/root/`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'GET');
 
-		if (this._dryRun && parentModule.Id === DryRunFakeModule.Id) {
+		if (this._dryRun && parentModule && parentModule.Id === DryRunFakeModule.Id) {
 			return DryRunFakeModule;
 		}
 
