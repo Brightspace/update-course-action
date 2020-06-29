@@ -535,14 +535,14 @@ module.exports = class QuizProcessor {
 	async _createQuizTopic({ instanceUrl, orgUnit, quiz, parentModule, quizItem }) {
 		console.log(`Creating quiz topic: '${quiz.title}'`);
 
-		const url = new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Id}/content/modules/${parentModule.Id}/structure/`, instanceUrl);
+		const url = new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Identifier}/content/modules/${parentModule.Id}/structure/`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'POST');
 
 		const rcode = quizItem.ActivityId.split('/').slice(-1)[0];
 		const topic = ContentFactory.createTopic({
 			title: quiz.title,
 			topicType: 3,
-			url: `/d2l/common/dialogs/quickLink/quickLink.d2l?ou=${orgUnit.Id}&type=quiz&rcode=${rcode}`,
+			url: `/d2l/common/dialogs/quickLink/quickLink.d2l?ou=${orgUnit.Identifier}&type=quiz&rcode=${rcode}`,
 			isExempt: !quiz.isRequired
 		});
 
@@ -566,7 +566,7 @@ module.exports = class QuizProcessor {
 	}
 
 	async _getContent(instanceUrl, orgUnit, parentModule) {
-		const url = new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Id}/content/modules/${parentModule.Id}/structure/`, instanceUrl);
+		const url = new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Identifier}/content/modules/${parentModule.Id}/structure/`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'GET');
 
 		if (this._dryRun && parentModule.Id === DryRunFakeModule.Id) {
@@ -583,7 +583,7 @@ module.exports = class QuizProcessor {
 	}
 
 	async _getQuizzes(instanceUrl, orgUnit) {
-		const url = new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Id}/quizzes/`, instanceUrl);
+		const url = new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Identifier}/quizzes/`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'GET');
 
 		const response = await this._fetch(signedUrl);
@@ -7726,7 +7726,7 @@ module.exports = class TopicProcessor {
 
 		console.log(`Creating topic: '${topic.title}' with file: '${fileName}'`);
 
-		const url = new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Id}/content/modules/${parentModule.Id}/structure/`, instanceUrl);
+		const url = new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Identifier}/content/modules/${parentModule.Id}/structure/`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'POST');
 
 		const fileContent = await fs.promises.readFile(`${this._contentPath}/${fileName}`);
@@ -7771,7 +7771,7 @@ module.exports = class TopicProcessor {
 
 		console.log(`Updating topic: '${topic.title}' with file: '${fileName}'`);
 
-		const url = new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Id}/content/topics/${lmsTopic.Id}`, instanceUrl);
+		const url = new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Identifier}/content/topics/${lmsTopic.Id}`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'PUT');
 
 		const body = {
@@ -7799,7 +7799,7 @@ module.exports = class TopicProcessor {
 			}
 		}
 
-		const fileUrl = new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Id}/content/topics/${lmsTopic.Id}/file`, instanceUrl);
+		const fileUrl = new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Identifier}/content/topics/${lmsTopic.Id}/file`, instanceUrl);
 		const signedFileUrl = this._valence.createAuthenticatedUrl(fileUrl, 'PUT');
 
 		const fileContent = await fs.promises.readFile(`${this._contentPath}/${fileName}`);
@@ -7831,7 +7831,7 @@ module.exports = class TopicProcessor {
 	}
 
 	async _getContent(instanceUrl, orgUnit, parentModule) {
-		const url = new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Id}/content/modules/${parentModule.Id}/structure/`, instanceUrl);
+		const url = new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Identifier}/content/modules/${parentModule.Id}/structure/`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'GET');
 
 		if (this._dryRun && parentModule.Id === DryRunFakeModule.Id) {
