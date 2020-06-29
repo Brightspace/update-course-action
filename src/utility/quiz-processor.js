@@ -16,9 +16,6 @@ module.exports = class QuizProcessor {
 	}
 
 	async processQuiz(instanceUrl, orgUnit, quiz, parentModule) {
-		const quizzes = await this._getQuizzes(instanceUrl, orgUnit);
-		const quizItem = quizzes.Objects && Array.isArray(quizzes.Objects) && quizzes.Objects.find(x => x.Name === quiz.title);
-
 		const content = await this._getContent(instanceUrl, orgUnit, parentModule);
 		const self = Array.isArray(content) && content.find(x => x.Type === 1 && x.TopicType === 3 && x.Title === quiz.title);
 
@@ -26,6 +23,9 @@ module.exports = class QuizProcessor {
 			// Nothing to do, the quicklink exists
 			return self;
 		}
+
+		const quizzes = await this._getQuizzes(instanceUrl, orgUnit);
+		const quizItem = quizzes.Objects && Array.isArray(quizzes.Objects) && quizzes.Objects.find(x => x.Name === quiz.title);
 
 		return this._createQuizTopic({ instanceUrl, orgUnit, quiz, parentModule, quizItem });
 	}
@@ -40,7 +40,8 @@ module.exports = class QuizProcessor {
 		const topic = ContentFactory.createTopic({
 			title: quiz.title,
 			topicType: 3,
-			url: `/d2l/common/dialogs/quickLink/quickLink.d2l?ou=${orgUnit.Id}&type=quiz&rcode=${rcode}`
+			url: `/d2l/common/dialogs/quickLink/quickLink.d2l?ou=${orgUnit.Id}&type=quiz&rcode=${rcode}`,
+			isExempt: !quiz.isRequired
 		});
 
 		if (this._dryRun) {

@@ -66,6 +66,10 @@
         "title": {
           "type": "string",
           "title": "The name of the quiz"
+        },
+        "isRequired": {
+          "type": "boolean",
+          "title": "Indicates if the quiz is required for completion"
         }
       },
       "required": [

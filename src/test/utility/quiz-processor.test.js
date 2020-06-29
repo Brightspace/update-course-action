@@ -89,7 +89,8 @@ test('creates quiz topic', async t => {
 
 	const quiz = {
 		title: 'Test Quiz',
-		type: 'quiz'
+		type: 'quiz',
+		isRequired: true
 	};
 
 	const processor = new QuizProcessor({}, MockValence, fetch);
@@ -102,15 +103,6 @@ test('noop on existing quiz topic', async t => {
 	const url = new URL('https://example.com');
 	const fetch = fetchMock.sandbox();
 
-	fetch.get({
-		url: 'https://example.com/d2l/api/le/1.46/123/quizzes/'
-	}, {
-		Objects: [{
-			QuizId: 1,
-			Name: 'Test Quiz',
-			ActivityId: 'https://ids.brightspace.com/activities/quiz/Dev-1'
-		}]
-	});
 	fetch.get({
 		url: 'https://example.com/d2l/api/le/1.46/123/content/modules/1/structure/'
 	}, {
