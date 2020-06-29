@@ -496,6 +496,109 @@ module.exports.default = exports.default;
 
 /***/ }),
 
+/***/ 131:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+"use strict";
+
+
+const { DryRunFakeModule, LEVersion } = __webpack_require__(648);
+const ContentFactory = __webpack_require__(788);
+
+module.exports = class QuizProcessor {
+	constructor(
+		{ isDryRun = false },
+		valence,
+		fetch = __webpack_require__(454)
+	) {
+		this._dryRun = isDryRun;
+
+		this._fetch = fetch;
+		this._valence = valence;
+	}
+
+	async processQuiz(instanceUrl, orgUnit, quiz, parentModule) {
+		const content = await this._getContent(instanceUrl, orgUnit, parentModule);
+		const self = Array.isArray(content) && content.find(x => x.Type === 1 && x.TopicType === 3 && x.Title === quiz.title);
+
+		if (self) {
+			// Nothing to do, the quicklink exists
+			return self;
+		}
+
+		const quizzes = await this._getQuizzes(instanceUrl, orgUnit);
+		const quizItem = quizzes.Objects && Array.isArray(quizzes.Objects) && quizzes.Objects.find(x => x.Name === quiz.title);
+
+		return this._createQuizTopic({ instanceUrl, orgUnit, quiz, parentModule, quizItem });
+	}
+
+	async _createQuizTopic({ instanceUrl, orgUnit, quiz, parentModule, quizItem }) {
+		console.log(`Creating quiz topic: '${quiz.title}'`);
+
+		const url = new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Id}/content/modules/${parentModule.Id}/structure/`, instanceUrl);
+		const signedUrl = this._valence.createAuthenticatedUrl(url, 'POST');
+
+		const rcode = quizItem.ActivityId.split('/').slice(-1)[0];
+		const topic = ContentFactory.createTopic({
+			title: quiz.title,
+			topicType: 3,
+			url: `/d2l/common/dialogs/quickLink/quickLink.d2l?ou=${orgUnit.Id}&type=quiz&rcode=${rcode}`,
+			isExempt: !quiz.isRequired
+		});
+
+		if (this._dryRun) {
+			return;
+		}
+
+		const response = await this._fetch(
+			signedUrl,
+			{
+				method: 'POST',
+				body: JSON.stringify(topic)
+			}
+		);
+
+		if (!response.ok) {
+			throw new Error(response.statusText);
+		}
+
+		return response.json();
+	}
+
+	async _getContent(instanceUrl, orgUnit, parentModule) {
+		const url = new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Id}/content/modules/${parentModule.Id}/structure/`, instanceUrl);
+		const signedUrl = this._valence.createAuthenticatedUrl(url, 'GET');
+
+		if (this._dryRun && parentModule.Id === DryRunFakeModule.Id) {
+			return DryRunFakeModule;
+		}
+
+		const response = await this._fetch(signedUrl);
+
+		if (!response.ok) {
+			throw new Error(response.statusText);
+		}
+
+		return response.json();
+	}
+
+	async _getQuizzes(instanceUrl, orgUnit) {
+		const url = new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Id}/quizzes/`, instanceUrl);
+		const signedUrl = this._valence.createAuthenticatedUrl(url, 'GET');
+
+		const response = await this._fetch(signedUrl);
+
+		if (!response.ok) {
+			throw new Error(response.statusText);
+		}
+
+		return response.json();
+	}
+};
+
+
+/***/ }),
+
 /***/ 141:
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -5244,7 +5347,8 @@ function clean(key)
 
 
 const fs = __webpack_require__(747);
-const FormData = __webpack_require__(928);
+
+const { LPVersion } = __webpack_require__(648);
 
 module.exports = class UploadCourseContent {
 	constructor(
@@ -5254,7 +5358,10 @@ module.exports = class UploadCourseContent {
 			isDryRun
 		},
 		valence,
-		fetch = __webpack_require__(454)
+		{
+			fetch = __webpack_require__(454),
+			ModuleProcessor = __webpack_require__(903)
+		}
 	) {
 		this._fetch = fetch;
 		this._valence = valence;
@@ -5263,6 +5370,8 @@ module.exports = class UploadCourseContent {
 		this._dryRun = isDryRun;
 
 		this._markdownRegex = /.md$/i;
+
+		this._moduleProcessor = new ModuleProcessor({ contentPath: contentDirectory, isDryRun }, valence);
 	}
 
 	/**
@@ -5275,263 +5384,18 @@ module.exports = class UploadCourseContent {
 		orgUnitId
 	) {
 		const whoAmI = await this._whoAmI(instanceUrl);
-		console.log(`Running in user context: ${whoAmI.UniqueName}`);
+		console.log(`Running in user context: '${whoAmI.UniqueName}'`);
 
 		const orgUnit = await this._getOrgUnit(instanceUrl, orgUnitId);
-		console.log(`Found course offering: ${orgUnit.Name} with id ${orgUnit.Identifier}`);
+		console.log(`Found course offering: '${orgUnit.Name}' with id: '${orgUnit.Identifier}'`);
 
 		const manifest = await this._getManifest();
-		console.log('Loaded manifest');
 
 		// Order matters on creates, so not using .map()
 		for (const module of manifest.modules) {
 			// eslint-disable-next-line no-await-in-loop
-			await this._processModule(instanceUrl, orgUnit, module);
+			await this._moduleProcessor.processModule(instanceUrl, orgUnit, module);
 		}
-	}
-
-	async _processModule(instanceUrl, orgUnit, module, parentModule) {
-		console.log(`Processing module: ${module.title}`);
-
-		const items = await this._getContent(instanceUrl, orgUnit, parentModule);
-		let self = Array.isArray(items) && items.find(m => m.Type === 0 && m.Title === module.title);
-
-		if (self) {
-			await this._updateModule(instanceUrl, orgUnit, module, self);
-		} else {
-			self = await this._createModule(instanceUrl, orgUnit, module, parentModule);
-		}
-
-		// Order matters on creates, so not using .map()
-		for (const child of module.children) {
-			if (child.type === 'topic') {
-				// eslint-disable-next-line no-await-in-loop
-				await this._processTopic(instanceUrl, orgUnit, child, self);
-			} else if (child.type === 'resource') {
-				// eslint-disable-next-line no-await-in-loop
-				await this._processResource(instanceUrl, orgUnit, child, self);
-			} else {
-				// eslint-disable-next-line no-await-in-loop
-				await this._processModule(instanceUrl, orgUnit, child, self);
-			}
-		}
-	}
-
-	async _processResource(instanceUrl, orgUnit, resource, parentModule) {
-		console.log(`Processing resource: ${resource.fileName}`);
-
-		const topic = {
-			...resource,
-			...{
-				title: resource.fileName
-			}
-		};
-
-		return this._processTopic(instanceUrl, orgUnit, topic, parentModule, true);
-	}
-
-	async _processTopic(instanceUrl, orgUnit, topic, parentModule, isHidden = false) {
-		console.log(`Processing topic: ${topic.title}`);
-
-		const topics = await this._getContent(instanceUrl, orgUnit, parentModule);
-		const self = Array.isArray(topics) && topics.find(t => t.Type === 1 && t.TopicType === 1 && t.Title === topic.title);
-
-		if (self) {
-			await this._updateTopic(instanceUrl, orgUnit, topic, self, isHidden);
-			return self;
-		}
-
-		return this._createTopic(instanceUrl, orgUnit, topic, parentModule, isHidden);
-	}
-
-	async _createModule(instanceUrl, orgUnit, module, parentModule) {
-		console.log(`Creating module: ${module.title}`);
-
-		const url = parentModule
-			? new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/modules/${parentModule.Id}/structure/`, instanceUrl)
-			: new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/root/`, instanceUrl);
-		const signedUrl = this._valence.createAuthenticatedUrl(url, 'POST');
-
-		const descriptionFileName = module.descriptionFileName.replace(this._markdownRegex, '.html');
-		const description = await fs.promises.readFile(`${this._contentDir}/${descriptionFileName}`);
-
-		if (this._dryRun) {
-			return UploadCourseContent.DRY_RUN_FAKE_MODULE;
-		}
-
-		const response = await this._fetch(
-			signedUrl,
-			{
-				method: 'POST',
-				body: JSON.stringify({
-					Title: module.title,
-					ShortTitle: module.title,
-					Type: 0,
-					ModuleStartDate: null,
-					ModuleEndDate: null,
-					ModuleDueDate: module.dueDate || null,
-					IsHidden: false,
-					IsLocked: false,
-					Description: {
-						Html: description.toString('utf-8')
-					}
-				})
-			});
-
-		return response.json();
-	}
-
-	async _createTopic(instanceUrl, orgUnit, topic, parentModule, isHidden = false) {
-		const fileName = topic.fileName.replace(this._markdownRegex, '.html');
-
-		console.log(`Creating topic: ${topic.title} with file: ${orgUnit.Path}${fileName}`);
-
-		const url = new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/modules/${parentModule.Id}/structure/`, instanceUrl);
-		const signedUrl = this._valence.createAuthenticatedUrl(url, 'POST');
-
-		const fileContent = await fs.promises.readFile(`${this._contentDir}/${fileName}`);
-
-		const formData = new FormData();
-		formData.append(
-			'',
-			JSON.stringify({
-				Title: topic.title,
-				ShortTitle: topic.title,
-				Type: 1,
-				TopicType: 1,
-				StartDate: null,
-				EndDate: null,
-				DueDate: topic.dueDate || null,
-				Url: `${orgUnit.Path}${fileName}`,
-				IsHidden: isHidden,
-				IsLocked: false,
-				IsExempt: !topic.isRequired
-			}),
-			{ contentType: 'application/json' }
-		);
-		formData.append(
-			'',
-			fileContent,
-			{ contentType: 'text/html', filename: `${fileName}` }
-		);
-
-		if (this._dryRun) {
-			return {};
-		}
-
-		const response = await this._fetch(
-			signedUrl,
-			{
-				method: 'POST',
-				headers: {
-					'Content-Type': `multipart/mixed; boundary=${formData.getBoundary()}`
-				},
-				body: formData
-			});
-
-		return response.json();
-	}
-
-	async _updateModule(instanceUrl, orgUnit, module, lmsModule, isHidden = false) {
-		console.log(`Updating module ${module.title}`);
-
-		const url = new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/modules/${lmsModule.Id}`, instanceUrl);
-		const signedUrl = this._valence.createAuthenticatedUrl(url, 'PUT');
-
-		const descriptionFileName = module.descriptionFileName.replace(this._markdownRegex, '.html');
-		const description = await fs.promises.readFile(`${this._contentDir}/${descriptionFileName}`);
-
-		const body = {
-			...lmsModule,
-			...{
-				Title: module.title,
-				ShortTitle: module.title,
-				ModuleDueDate: module.dueDate || null,
-				IsHidden: isHidden,
-				Description: {
-					Html: description.toString('utf-8')
-				}
-			}
-		};
-
-		if (this._dryRun) {
-			return body;
-		}
-
-		await this._fetch(
-			signedUrl,
-			{
-				method: 'PUT',
-				body: JSON.stringify(body)
-			});
-
-		return body;
-	}
-
-	async _updateTopic(instanceUrl, orgUnit, topic, lmsTopic) {
-		const url = new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/topics/${lmsTopic.Id}`, instanceUrl);
-		const signedUrl = this._valence.createAuthenticatedUrl(url, 'PUT');
-
-		const fileName = topic.fileName.replace(this._markdownRegex, '.html');
-
-		console.log(`Updating ${topic.title} and file ${fileName}`);
-
-		const body = {
-			...lmsTopic,
-			...{
-				Title: topic.title,
-				ShortTitle: topic.title,
-				Url: `${orgUnit.Path}${fileName}`,
-				DueDate: topic.dueDate || null,
-				ResetCompletionTracking: true,
-				IsExempt: !topic.isRequired
-			}
-		};
-
-		const fileUrl = new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/topics/${lmsTopic.Id}/file`, instanceUrl);
-		const signedFileUrl = this._valence.createAuthenticatedUrl(fileUrl, 'PUT');
-		const fileContent = await fs.promises.readFile(`${this._contentDir}/${fileName}`);
-
-		const formData = new FormData();
-		formData.append(
-			'file',
-			fileContent,
-			{ contentType: 'text/html', filename: `${fileName}` }
-		);
-
-		if (this._dryRun) {
-			return body;
-		}
-
-		await this._fetch(
-			signedUrl,
-			{
-				method: 'PUT',
-				body: JSON.stringify(body)
-			});
-
-		await this._fetch(
-			signedFileUrl,
-			{
-				method: 'PUT',
-				headers: {
-					'Content-Type': `multipart/mixed; boundary=${formData.getBoundary()}`
-				},
-				body: formData
-			});
-
-		return body;
-	}
-
-	async _getContent(instanceUrl, orgUnit, parentModule = null) {
-		const url = parentModule
-			? new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/modules/${parentModule.Id}/structure/`, instanceUrl)
-			: new URL(`/d2l/api/le/1.34/${orgUnit.Identifier}/content/root/`, instanceUrl);
-		const signedUrl = this._valence.createAuthenticatedUrl(url, 'GET');
-
-		const response = await this._fetch(signedUrl);
-
-		return response.json();
 	}
 
 	async _getManifest() {
@@ -5541,7 +5405,7 @@ module.exports = class UploadCourseContent {
 	}
 
 	async _getOrgUnit(instanceUrl, orgUnitId) {
-		const url = new URL(`/d2l/api/lp/1.23/courses/${orgUnitId}`, instanceUrl);
+		const url = new URL(`/d2l/api/lp/${LPVersion}/courses/${orgUnitId}`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'GET');
 
 		const response = await this._fetch(signedUrl);
@@ -5550,16 +5414,12 @@ module.exports = class UploadCourseContent {
 	}
 
 	async _whoAmI(instanceUrl) {
-		const url = new URL('/d2l/api/lp/1.23/users/whoami', instanceUrl);
+		const url = new URL(`/d2l/api/lp/${LPVersion}/users/whoami`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'GET');
 
 		const response = await this._fetch(signedUrl);
 
 		return response.json();
-	}
-
-	static get DRY_RUN_FAKE_MODULE() {
-		return { Id: 23487 };
 	}
 };
 
@@ -6169,6 +6029,23 @@ function isAscii(str) {
 
 module.exports = exports.default;
 module.exports.default = exports.default;
+
+/***/ }),
+
+/***/ 648:
+/***/ (function(module) {
+
+"use strict";
+
+
+module.exports = {
+	DryRunFakeModule: {
+		Id: 0
+	},
+	LEVersion: '1.46',
+	LPVersion: '1.28'
+};
+
 
 /***/ }),
 
@@ -7248,6 +7125,54 @@ module.exports.default = exports.default;
 
 /***/ }),
 
+/***/ 788:
+/***/ (function(module) {
+
+"use strict";
+
+
+module.exports = class ContentFactory {
+	static createRichText(content, type) {
+		return {
+			Content: content,
+			Type: type
+		};
+	}
+
+	static createModule({ title, description, dueDate = null }) {
+		return {
+			Title: title,
+			ShortTitle: title,
+			Type: 0,
+			ModuleStartDate: null,
+			ModuleEndDate: null,
+			ModuleDueDate: dueDate,
+			IsHidden: false,
+			IsLocked: false,
+			Description: description
+		};
+	}
+
+	static createTopic({ title, topicType = 1, dueDate = null, url, isHidden = false, isExempt = false }) {
+		return {
+			Title: title,
+			ShortTitle: title,
+			Type: 1,
+			TopicType: topicType,
+			StartDate: null,
+			EndDate: null,
+			DueDate: dueDate,
+			Url: url,
+			IsHidden: isHidden,
+			IsLocked: false,
+			IsExempt: isExempt
+		};
+	}
+};
+
+
+/***/ }),
+
 /***/ 790:
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -7755,6 +7680,351 @@ function descending(a, b)
 {
   return -1 * ascending(a, b);
 }
+
+
+/***/ }),
+
+/***/ 902:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+"use strict";
+
+
+const fs = __webpack_require__(747);
+const FormData = __webpack_require__(928);
+
+const { DryRunFakeModule, LEVersion } = __webpack_require__(648);
+const ContentFactory = __webpack_require__(788);
+
+module.exports = class TopicProcessor {
+	constructor(
+		{ contentPath, isDryRun = false },
+		valence,
+		fetch = __webpack_require__(454)
+	) {
+		this._contentPath = contentPath;
+		this._dryRun = isDryRun;
+
+		this._fetch = fetch;
+		this._valence = valence;
+
+		this._markdownRegex = /.md$/i;
+	}
+
+	async processTopic({ instanceUrl, orgUnit, topic, parentModule, isHidden = false }) {
+		const topics = await this._getContent(instanceUrl, orgUnit, parentModule);
+		const self = Array.isArray(topics) && topics.find(x => x.Type === 1 && x.TopicType === 1 && x.Title === topic.title);
+
+		if (self) {
+			await this._updateTopic(instanceUrl, orgUnit, topic, self);
+			return self;
+		}
+
+		return this._createTopic({ instanceUrl, orgUnit, topic, parentModule, isHidden });
+	}
+
+	async _createTopic({ instanceUrl, orgUnit, topic, parentModule, isHidden }) {
+		const fileName = topic.fileName.replace(this._markdownRegex, '.html');
+
+		console.log(`Creating topic: '${topic.title}' with file: '${fileName}'`);
+
+		const url = new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Id}/content/modules/${parentModule.Id}/structure/`, instanceUrl);
+		const signedUrl = this._valence.createAuthenticatedUrl(url, 'POST');
+
+		const fileContent = await fs.promises.readFile(`${this._contentPath}/${fileName}`);
+
+		const createTopic = ContentFactory.createTopic({
+			title: topic.title,
+			url: `${orgUnit.Path}${fileName}`,
+			dueDate: topic.dueDate,
+			isHidden,
+			isExempt: !topic.isRequired
+		});
+
+		const formData = new FormData();
+		formData.append(
+			'',
+			JSON.stringify(createTopic),
+			{ contentType: 'application/json' }
+		);
+		formData.append(
+			'',
+			fileContent,
+			{ contentType: 'text/html', filename: `${fileName}` }
+		);
+
+		const response = await this._fetch(
+			signedUrl,
+			{
+				method: 'POST',
+				headers: `multipart/mixed; ${formData.getBoundary()}`,
+				body: formData
+			});
+
+		if (!response.ok) {
+			throw new Error(response.statusText);
+		}
+
+		return response.json();
+	}
+
+	async _updateTopic(instanceUrl, orgUnit, topic, lmsTopic) {
+		const fileName = topic.fileName.replace(this._markdownRegex, '.html');
+
+		console.log(`Updating topic: '${topic.title}' with file: '${fileName}'`);
+
+		const url = new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Id}/content/topics/${lmsTopic.Id}`, instanceUrl);
+		const signedUrl = this._valence.createAuthenticatedUrl(url, 'PUT');
+
+		const body = {
+			...lmsTopic,
+			...{
+				Title: topic.title,
+				ShortTitle: topic.title,
+				Url: `${orgUnit.Path}${fileName}`,
+				DueDate: topic.dueDate || null,
+				ResetCompletionTracking: true,
+				IsExempt: !topic.isRequired
+			}
+		};
+
+		if (!this._dryRun) {
+			const response = await this._fetch(
+				signedUrl,
+				{
+					method: 'PUT',
+					body: JSON.stringify(body)
+				});
+
+			if (!response.ok) {
+				throw new Error(response.statusText);
+			}
+		}
+
+		const fileUrl = new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Id}/content/topics/${lmsTopic.Id}/file`, instanceUrl);
+		const signedFileUrl = this._valence.createAuthenticatedUrl(fileUrl, 'PUT');
+
+		const fileContent = await fs.promises.readFile(`${this._contentPath}/${fileName}`);
+
+		const formData = new FormData();
+		formData.append(
+			'file',
+			fileContent,
+			{ contentType: 'text/html', filename: `${fileName}` }
+		);
+
+		if (!this._dryRun) {
+			const fileResponse = await this._fetch(
+				signedFileUrl,
+				{
+					method: 'PUT',
+					headers: {
+						'Content-Type': 'multipart/mixed'
+					},
+					body: formData
+				});
+
+			if (!fileResponse.ok) {
+				throw new Error(fileResponse.statusText);
+			}
+		}
+
+		return body;
+	}
+
+	async _getContent(instanceUrl, orgUnit, parentModule) {
+		const url = new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Id}/content/modules/${parentModule.Id}/structure/`, instanceUrl);
+		const signedUrl = this._valence.createAuthenticatedUrl(url, 'GET');
+
+		if (this._dryRun && parentModule.Id === DryRunFakeModule.Id) {
+			return DryRunFakeModule;
+		}
+
+		const response = await this._fetch(signedUrl);
+
+		if (!response.ok) {
+			throw new Error(response.statusText);
+		}
+
+		return response.json();
+	}
+};
+
+
+/***/ }),
+
+/***/ 903:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+"use strict";
+
+
+const fs = __webpack_require__(747);
+
+const ContentFactory = __webpack_require__(788);
+const { DryRunFakeModule, LEVersion } = __webpack_require__(648);
+
+module.exports = class ModuleProcessor {
+	constructor(
+		{ contentPath, isDryRun = false },
+		valence,
+		{
+			fetch = __webpack_require__(454),
+			TopicProcessor = __webpack_require__(902),
+			QuizProcessor = __webpack_require__(131)
+		}
+	) {
+		this._contentPath = contentPath;
+		this._dryRun = isDryRun;
+
+		this._fetch = fetch;
+		this._valence = valence;
+		this._topicProcessor = new TopicProcessor({ contentPath, isDryRun }, valence);
+		this._quizProcessor = new QuizProcessor({ isDryRun }, valence);
+
+		this._markdownRegex = /.md$/i;
+	}
+
+	async processModule(instanceUrl, orgUnit, module, parentModule = null) {
+		const items = await this._getContent(instanceUrl, orgUnit, parentModule);
+		let self = Array.isArray(items) && items.find(m => m.Type === 0 && m.Title === module.title);
+
+		if (self) {
+			await this._updateModule({ instanceUrl, orgUnit, module, lmsModule: self });
+		} else {
+			self = await this._createModule(instanceUrl, orgUnit, module, parentModule);
+		}
+
+		// Order matters on creates, so not using .map()
+		/* eslint-disable no-await-in-loop */
+		for (const child of module.children) {
+			switch (child.type) {
+				case 'module':
+					await this._processModule(instanceUrl, orgUnit, child, self);
+					break;
+				case 'quiz':
+					await this._quizProcessor.processQuiz(instanceUrl, orgUnit, child, self);
+					break;
+				case 'resource':
+					await this._processResource(instanceUrl, orgUnit, child, self);
+					break;
+				case 'topic':
+					await this._topicProcessor.processTopic({ instanceUrl, orgUnit, topic: child, parentModule: self });
+					break;
+				default:
+					throw new Error(`Unknown content type: ${child.type}`);
+			}
+		}
+		/* eslint-enable no-await-in-loop */
+	}
+
+	async _createModule(instanceUrl, orgUnit, module, parentModule) {
+		console.log(`Creating module: '${module.title}'`);
+
+		const url = parentModule
+			? new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Identifier}/content/modules/${parentModule.Id}/structure/`, instanceUrl)
+			: new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Identifier}/content/root/`, instanceUrl);
+		const signedUrl = this._valence.createAuthenticatedUrl(url, 'POST');
+
+		const descriptionFileName = module.descriptionFileName.replace(this._markdownRegex, '.html');
+		const descriptionHtml = await fs.promises.readFile(`${this._contentPath}/${descriptionFileName}`);
+
+		if (this._dryRun) {
+			return DryRunFakeModule;
+		}
+
+		const description = ContentFactory.createRichText(descriptionHtml.toString('utf-8'), 'Html');
+
+		const createModule = ContentFactory.createModule({
+			title: module.title,
+			description,
+			dueDate: module.dueDate
+		});
+
+		const response = await this._fetch(
+			signedUrl,
+			{
+				method: 'POST',
+				body: JSON.stringify(createModule)
+			});
+
+		if (!response.ok) {
+			throw new Error(response.statusText);
+		}
+
+		return response.json();
+	}
+
+	async _updateModule({ instanceUrl, orgUnit, module, lmsModule, isHidden = false }) {
+		console.log(`Updating module: '${module.title}'`);
+
+		const url = new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Identifier}/content/modules/${lmsModule.Id}`, instanceUrl);
+		const signedUrl = this._valence.createAuthenticatedUrl(url, 'PUT');
+
+		const descriptionFileName = module.descriptionFileName.replace(this._markdownRegex, '.html');
+		const descriptionHtml = await fs.promises.readFile(`${this._contentPath}/${descriptionFileName}`);
+
+		const description = ContentFactory.createRichText(descriptionHtml.toString('utf-8'), 'Html');
+
+		const body = {
+			...lmsModule,
+			...{
+				Title: module.title,
+				ShortTitle: module.title,
+				ModuleDueDate: module.dueDate || null,
+				IsHidden: isHidden,
+				Description: description
+			}
+		};
+
+		if (this._dryRun) {
+			return body;
+		}
+
+		const response = await this._fetch(
+			signedUrl,
+			{
+				method: 'PUT',
+				body: JSON.stringify(body)
+			});
+
+		if (!response.ok) {
+			throw new Error(response.statusText);
+		}
+
+		return body;
+	}
+
+	async _processResource(instanceUrl, orgUnit, resource, parentModule) {
+		const topic = {
+			...resource,
+			...{
+				title: resource.fileName
+			}
+		};
+
+		return this._topicProcessor.processTopic({ instanceUrl, orgUnit, topic, parentModule, isHidden: true });
+	}
+
+	async _getContent(instanceUrl, orgUnit, parentModule = null) {
+		const url = parentModule
+			? new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Identifier}/content/modules/${parentModule.Id}/structure/`, instanceUrl)
+			: new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Identifier}/content/root/`, instanceUrl);
+		const signedUrl = this._valence.createAuthenticatedUrl(url, 'GET');
+
+		if (this._dryRun && parentModule.Id === DryRunFakeModule.Id) {
+			return DryRunFakeModule;
+		}
+
+		const response = await this._fetch(signedUrl);
+
+		if (!response.ok) {
+			throw new Error(response.statusText);
+		}
+
+		return response.json();
+	}
+};
 
 
 /***/ }),
