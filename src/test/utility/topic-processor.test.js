@@ -41,12 +41,12 @@ test('creates topic', async t => {
 	const fetch = fetchMock.sandbox();
 
 	fetch.get({
-		url: 'https://example.com/d2l/api/le/1.46/123/content/modules/1/structure/'
+		url: 'https://example.com/d2l/api/le/1.44/123/content/modules/1/structure/'
 	}, {
 		body: ''
 	});
 	fetch.post((url, options) => {
-		if (url !== 'https://example.com/d2l/api/le/1.46/123/content/modules/1/structure/') {
+		if (url !== 'https://example.com/d2l/api/le/1.44/123/content/modules/1/structure/') {
 			return false;
 		}
 
@@ -102,13 +102,13 @@ test('creates hidden topic', async t => {
 	const fetch = fetchMock.sandbox();
 
 	fetch.get({
-		url: 'https://example.com/d2l/api/le/1.46/123/content/modules/1/structure/'
+		url: 'https://example.com/d2l/api/le/1.44/123/content/modules/1/structure/'
 	}, {
 		body: ''
 	});
 
 	fetch.post((url, options) => {
-		if (url !== 'https://example.com/d2l/api/le/1.46/123/content/modules/1/structure/') {
+		if (url !== 'https://example.com/d2l/api/le/1.44/123/content/modules/1/structure/') {
 			return false;
 		}
 
@@ -161,7 +161,7 @@ test('updates topic', async t => {
 	const fetch = fetchMock.sandbox();
 
 	fetch.get({
-		url: 'https://example.com/d2l/api/le/1.46/123/content/modules/1/structure/'
+		url: 'https://example.com/d2l/api/le/1.44/123/content/modules/1/structure/'
 	}, {
 		body: [{
 			Id: 2,
@@ -179,7 +179,7 @@ test('updates topic', async t => {
 		}]
 	});
 	fetch.put((url, options) => {
-		if (url !== 'https://example.com/d2l/api/le/1.46/123/content/topics/2') {
+		if (url !== 'https://example.com/d2l/api/le/1.44/123/content/topics/2') {
 			return false;
 		}
 
@@ -205,7 +205,7 @@ test('updates topic', async t => {
 		status: 200
 	});
 	fetch.put((url, options) => {
-		if (url !== 'https://example.com/d2l/api/le/1.46/123/content/topics/2/file') {
+		if (url !== 'https://example.com/d2l/api/le/1.44/123/content/topics/2/file') {
 			return false;
 		}
 
@@ -238,7 +238,7 @@ test('updates hidden topic', async t => {
 	const fetch = fetchMock.sandbox();
 
 	fetch.get({
-		url: 'https://example.com/d2l/api/le/1.46/123/content/modules/1/structure/'
+		url: 'https://example.com/d2l/api/le/1.44/123/content/modules/1/structure/'
 	}, {
 		body: [{
 			Id: 3,
@@ -256,7 +256,7 @@ test('updates hidden topic', async t => {
 		}]
 	});
 	fetch.put((url, options) => {
-		if (url !== 'https://example.com/d2l/api/le/1.46/123/content/topics/3') {
+		if (url !== 'https://example.com/d2l/api/le/1.44/123/content/topics/3') {
 			return false;
 		}
 
@@ -299,7 +299,7 @@ test('updates hidden topic', async t => {
 		}
 	});
 	fetch.put((url, options) => {
-		if (url !== 'https://example.com/d2l/api/le/1.46/123/content/topics/3/file') {
+		if (url !== 'https://example.com/d2l/api/le/1.44/123/content/topics/3/file') {
 			return false;
 		}
 

@@ -48,12 +48,12 @@ test('creates module', async t => {
 
 	const fetch = fetchMock.sandbox();
 	fetch.get({
-		url: 'https://example.com/d2l/api/le/1.46/123/content/root/'
+		url: 'https://example.com/d2l/api/le/1.44/123/content/root/'
 	}, {
 		body: ''
 	});
 	fetch.post((url, options) => {
-		if (url !== 'https://example.com/d2l/api/le/1.46/123/content/root/') {
+		if (url !== 'https://example.com/d2l/api/le/1.44/123/content/root/') {
 			return false;
 		}
 
@@ -163,7 +163,7 @@ test('updates module', async t => {
 
 	const fetch = fetchMock.sandbox();
 	fetch.get({
-		url: 'https://example.com/d2l/api/le/1.46/123/content/root/'
+		url: 'https://example.com/d2l/api/le/1.44/123/content/root/'
 	}, {
 		body: [{
 			Id: 1,
@@ -181,7 +181,7 @@ test('updates module', async t => {
 		}]
 	});
 	fetch.put((url, options) => {
-		if (url !== 'https://example.com/d2l/api/le/1.46/123/content/modules/1') {
+		if (url !== 'https://example.com/d2l/api/le/1.44/123/content/modules/1') {
 			return false;
 		}
 
@@ -281,7 +281,7 @@ test('creates submodule', async t => {
 
 	const fetch = fetchMock.sandbox();
 	fetch.get({
-		url: 'https://example.com/d2l/api/le/1.46/123/content/modules/1/structure/'
+		url: 'https://example.com/d2l/api/le/1.44/123/content/modules/1/structure/'
 	}, {
 		body: [{
 			Id: 1,
@@ -299,7 +299,7 @@ test('creates submodule', async t => {
 		}]
 	});
 	fetch.post((url, options) => {
-		if (url !== 'https://example.com/d2l/api/le/1.46/123/content/modules/1/structure/') {
+		if (url !== 'https://example.com/d2l/api/le/1.44/123/content/modules/1/structure/') {
 			return false;
 		}
 
@@ -422,7 +422,7 @@ test('updates submodule', async t => {
 
 	const fetch = fetchMock.sandbox();
 	fetch.get({
-		url: 'https://example.com/d2l/api/le/1.46/123/content/modules/1/structure/'
+		url: 'https://example.com/d2l/api/le/1.44/123/content/modules/1/structure/'
 	}, {
 		body: [{
 			Id: 1,
@@ -453,7 +453,7 @@ test('updates submodule', async t => {
 		}]
 	});
 	fetch.put((url, options) => {
-		if (url !== 'https://example.com/d2l/api/le/1.46/123/content/modules/2') {
+		if (url !== 'https://example.com/d2l/api/le/1.44/123/content/modules/2') {
 			return false;
 		}
 
