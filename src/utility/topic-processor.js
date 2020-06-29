@@ -63,6 +63,10 @@ module.exports = class TopicProcessor {
 			{ contentType: 'text/html', filename: `${fileName}` }
 		);
 
+		if (this._dryRun) {
+			return {};
+		}
+
 		const response = await this._fetch(
 			signedUrl,
 			{
