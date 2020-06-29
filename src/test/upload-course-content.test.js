@@ -26,14 +26,14 @@ test('uploadCourseContent processes module', async t => {
 
 	const fetch = fetchMock.sandbox();
 	fetch.get({
-		url: 'https://example.com/d2l/api/lp/1.28/users/whoami'
+		url: 'https://example.com/d2l/api/lp/1.26/users/whoami'
 	}, {
 		body: {
 			UniqueName: 'Test User'
 		}
 	});
 	fetch.get({
-		url: 'https://example.com/d2l/api/lp/1.28/courses/123'
+		url: 'https://example.com/d2l/api/lp/1.26/courses/123'
 	}, {
 		body: {
 			Identifier: '123',

@@ -37,7 +37,7 @@ test('creates quiz topic', async t => {
 	const fetch = fetchMock.sandbox();
 
 	fetch.get({
-		url: 'https://example.com/d2l/api/le/1.46/123/quizzes/'
+		url: 'https://example.com/d2l/api/le/1.44/123/quizzes/'
 	}, {
 		Objects: [{
 			QuizId: 1,
@@ -46,12 +46,12 @@ test('creates quiz topic', async t => {
 		}]
 	});
 	fetch.get({
-		url: 'https://example.com/d2l/api/le/1.46/123/content/modules/1/structure/'
+		url: 'https://example.com/d2l/api/le/1.44/123/content/modules/1/structure/'
 	}, {
 		body: []
 	});
 	fetch.post((url, options) => {
-		if (url !== 'https://example.com/d2l/api/le/1.46/123/content/modules/1/structure/') {
+		if (url !== 'https://example.com/d2l/api/le/1.44/123/content/modules/1/structure/') {
 			return false;
 		}
 
@@ -104,7 +104,7 @@ test('noop on existing quiz topic', async t => {
 	const fetch = fetchMock.sandbox();
 
 	fetch.get({
-		url: 'https://example.com/d2l/api/le/1.46/123/content/modules/1/structure/'
+		url: 'https://example.com/d2l/api/le/1.44/123/content/modules/1/structure/'
 	}, {
 		body: [{
 			Id: 3,
