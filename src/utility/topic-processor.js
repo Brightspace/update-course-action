@@ -138,7 +138,7 @@ module.exports = class TopicProcessor {
 				{
 					method: 'PUT',
 					headers: {
-						'Content-Type': `multipart/mixed; boundary=${formData.getBoundary()}`
+						'Content-Type': `${formData.getHeaders()}`
 					},
 					body: formData
 				});
