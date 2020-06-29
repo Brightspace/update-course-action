@@ -63,11 +63,17 @@ module.exports = class TopicProcessor {
 			{ contentType: 'text/html', filename: `${fileName}` }
 		);
 
+		if (this._dryRun) {
+			return {};
+		}
+
 		const response = await this._fetch(
 			signedUrl,
 			{
 				method: 'POST',
-				headers: `multipart/mixed; ${formData.getBoundary()}`,
+				headers: {
+					'Content-Type': `multipart/mixed; ${formData.getBoundary()}`
+				},
 				body: formData
 			});
 

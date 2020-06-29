@@ -45,7 +45,7 @@ module.exports = class QuizProcessor {
 		});
 
 		if (this._dryRun) {
-			return;
+			return {};
 		}
 
 		const response = await this._fetch(
