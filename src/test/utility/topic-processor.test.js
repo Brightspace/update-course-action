@@ -131,7 +131,7 @@ test('creates hidden topic', async t => {
 			+ '{"Title":"test-module/resource.txt","ShortTitle":"test-module/resource.txt","Type":1,"TopicType":1,"StartDate":null,"EndDate":null,"DueDate":null,"Url":"/content/course123/test-module/resource.txt","IsHidden":true,"IsLocked":false,"IsExempt":true}\r\n'
 			+ `--${formdata.getBoundary()}\r\n`
 			+ 'Content-Disposition: form-data; name=""; filename="resource.txt"\r\n'
-			+ 'Content-Type: text/html\r\n\r\n'
+			+ 'Content-Type: text/plain\r\n\r\n'
 			+ 'ABC\n\r\n'
 			+ `--${formdata.getBoundary()}--\r\n`);
 
@@ -218,6 +218,11 @@ test('updates topic', async t => {
 		}
 
 		const formdata = new FormData(options.body);
+
+		t.deepEqual(options.headers, {
+			'Content-Type': `multipart/mixed; ${formdata.getBoundary()}`
+		});
+
 		t.is(formdata.getBuffer().toString('utf-8'), `--${formdata.getBoundary()}\r\n`
 			+ 'Content-Disposition: form-data; name="file"; filename="test-topic.html"\r\n'
 			+ 'Content-Type: text/html\r\n\r\n'
@@ -312,9 +317,14 @@ test('updates hidden topic', async t => {
 		}
 
 		const formdata = new FormData(options.body);
+
+		t.deepEqual(options.headers, {
+			'Content-Type': `multipart/mixed; ${formdata.getBoundary()}`
+		});
+
 		t.is(formdata.getBuffer().toString('utf-8'), `--${formdata.getBoundary()}\r\n`
 			+ 'Content-Disposition: form-data; name="file"; filename="resource.txt"\r\n'
-			+ 'Content-Type: text/html\r\n\r\n'
+			+ 'Content-Type: text/plain\r\n\r\n'
 			+ 'ABC\n\r\n'
 			+ `--${formdata.getBoundary()}--\r\n`);
 

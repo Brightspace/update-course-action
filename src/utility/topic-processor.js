@@ -1,6 +1,7 @@
 'use strict';
 
 const fs = require('fs');
+const mime = require('mime');
 const FormData = require('form-data');
 
 const { DryRunFakeModule, LEVersion } = require('../constants');
@@ -42,6 +43,7 @@ module.exports = class TopicProcessor {
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'POST');
 
 		const fileContent = await fs.promises.readFile(`${this._contentPath}/${fileName}`);
+		const fileContentMime = mime.getType(`${this._contentPath}/${fileName}`);
 
 		const createTopic = ContentFactory.createTopic({
 			title: topic.title,
@@ -60,7 +62,7 @@ module.exports = class TopicProcessor {
 		formData.append(
 			'',
 			fileContent,
-			{ contentType: 'text/html', filename: `${fileName}` }
+			{ contentType: fileContentMime, filename: `${fileName}` }
 		);
 
 		if (this._dryRun) {
@@ -121,12 +123,13 @@ module.exports = class TopicProcessor {
 		const signedFileUrl = this._valence.createAuthenticatedUrl(fileUrl, 'PUT');
 
 		const fileContent = await fs.promises.readFile(`${this._contentPath}/${fileName}`);
+		const fileContentMime = mime.getType(`${this._contentPath}/${fileName}`);
 
 		const formData = new FormData();
 		formData.append(
 			'file',
 			fileContent,
-			{ contentType: 'text/html', filename: `${fileName}` }
+			{ contentType: fileContentMime, filename: `${fileName}` }
 		);
 
 		if (!this._dryRun) {
@@ -135,7 +138,7 @@ module.exports = class TopicProcessor {
 				{
 					method: 'PUT',
 					headers: {
-						'Content-Type': 'multipart/mixed'
+						'Content-Type': `multipart/mixed; ${formData.getBoundary()}`
 					},
 					body: formData
 				});
