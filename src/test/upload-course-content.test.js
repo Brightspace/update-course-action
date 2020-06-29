@@ -69,7 +69,7 @@ test('uploadCourseContent processes module', async t => {
 		}
 	}
 
-	const uploader = new UploadCourseContent({ contentDirectory: ContentPath, manifestPath: ManifestPath }, MockValence, { fetch, ModuleProcessor: MockModuleProcessor });
+	const uploader = new UploadCourseContent({ contentDirectory: ContentPath, manifestPath: ManifestPath }, MockValence, fetch, MockModuleProcessor);
 
 	await uploader.uploadCourseContent(url, 123);
 

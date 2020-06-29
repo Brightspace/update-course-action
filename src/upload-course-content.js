@@ -12,10 +12,8 @@ module.exports = class UploadCourseContent {
 			isDryRun
 		},
 		valence,
-		{
-			fetch = require('node-fetch'),
-			ModuleProcessor = require('./utility/module-processor')
-		}
+		fetch = require('node-fetch'),
+		ModuleProcessor = require('./utility/module-processor')
 	) {
 		this._fetch = fetch;
 		this._valence = valence;

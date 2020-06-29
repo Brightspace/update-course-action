@@ -9,11 +9,9 @@ module.exports = class ModuleProcessor {
 	constructor(
 		{ contentPath, isDryRun = false },
 		valence,
-		{
-			fetch = require('node-fetch'),
-			TopicProcessor = require('./topic-processor'),
-			QuizProcessor = require('./quiz-processor')
-		}
+		fetch = require('node-fetch'),
+		TopicProcessor = require('./topic-processor'),
+		QuizProcessor = require('./quiz-processor')
 	) {
 		this._contentPath = contentPath;
 		this._dryRun = isDryRun;
