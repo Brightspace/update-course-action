@@ -12,7 +12,7 @@ const MockValence = {
 };
 
 const OrgUnit = {
-	Id: 123,
+	Identifier: 123,
 	Name: 'Org Unit',
 	Path: '/content/course123/'
 };
