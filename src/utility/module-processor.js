@@ -85,6 +85,9 @@ module.exports = class ModuleProcessor {
 			signedUrl,
 			{
 				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
 				body: JSON.stringify(createModule)
 			});
 
@@ -122,6 +125,9 @@ module.exports = class ModuleProcessor {
 			signedUrl,
 			{
 				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json'
+				},
 				body: JSON.stringify(body)
 			});
 

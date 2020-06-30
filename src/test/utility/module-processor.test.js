@@ -58,6 +58,10 @@ test('creates module', async t => {
 			return false;
 		}
 
+		t.deepEqual(options.headers, {
+			'Content-Type': 'application/json'
+		});
+
 		t.deepEqual(JSON.parse(options.body), {
 			Title: 'Test Module',
 			ShortTitle: 'Test Module',
@@ -186,6 +190,10 @@ test('updates module', async t => {
 			return false;
 		}
 
+		t.deepEqual(options.headers, {
+			'Content-Type': 'application/json'
+		});
+
 		t.deepEqual(JSON.parse(options.body), {
 			Id: 1,
 			Title: 'Test Module',
@@ -303,6 +311,10 @@ test('creates submodule', async t => {
 		if (url !== 'https://example.com/d2l/api/le/1.44/123/content/modules/1/structure/') {
 			return false;
 		}
+
+		t.deepEqual(options.headers, {
+			'Content-Type': 'application/json'
+		});
 
 		t.deepEqual(JSON.parse(options.body), {
 			Title: 'Test Module',
@@ -457,6 +469,10 @@ test('updates submodule', async t => {
 		if (url !== 'https://example.com/d2l/api/le/1.44/123/content/modules/2') {
 			return false;
 		}
+
+		t.deepEqual(options.headers, {
+			'Content-Type': 'application/json'
+		});
 
 		t.deepEqual(JSON.parse(options.body), {
 			Id: 2,
