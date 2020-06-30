@@ -4,6 +4,7 @@ const fetchMock = require('fetch-mock');
 const path = require('path');
 const test = require('ava');
 
+const { DryRunFakeModule } = require('../../constants');
 const ModuleProcessor = require('../../utility/module-processor');
 
 const ContentPath = path.join(__dirname, '..', 'content');
@@ -598,9 +599,7 @@ test('creates submodule, dryrun parentModule does not exist', async t => {
 				t.is(isHidden, true);
 			}
 
-			t.deepEqual(parentModule, {
-				Id: 0
-			});
+			t.deepEqual(parentModule, DryRunFakeModule);
 		}
 	}
 
@@ -612,17 +611,13 @@ test('creates submodule, dryrun parentModule does not exist', async t => {
 				title: 'Test Quiz',
 				type: 'quiz'
 			});
-			t.deepEqual(parentModule, {
-				Id: 0
-			});
+			t.deepEqual(parentModule, DryRunFakeModule);
 		}
 	}
 
 	const processor = new ModuleProcessor({ contentPath: ContentPath, isDryRun: true }, MockValence, fetch, MockTopicProcessor, MockQuizProcessor);
 
-	await processor.processModule(url, OrgUnit, TestModule, {
-		Id: 0
-	});
+	await processor.processModule(url, OrgUnit, TestModule, DryRunFakeModule);
 
 	t.true(fetch.done());
 });
