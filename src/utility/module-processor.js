@@ -58,7 +58,11 @@ module.exports = class ModuleProcessor {
 	}
 
 	async _createModule(instanceUrl, orgUnit, module, parentModule) {
-		console.log(`Creating module: '${module.title}'`);
+		if (parentModule) {
+			console.log(`Creating module: '${module.title}' with parent: '${parentModule.Title}'`);
+		} else {
+			console.log(`Creating module: '${module.title}'`);
+		}
 
 		const url = parentModule
 			? new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Identifier}/content/modules/${parentModule.Id}/structure/`, instanceUrl)
@@ -141,7 +145,7 @@ module.exports = class ModuleProcessor {
 
 	async _getDescription(module) {
 		if (!module.descriptionFileName) {
-			return ContentFactory.createRichText('', 'Html');
+			return null;
 		}
 
 		const descriptionFileName = module.descriptionFileName.replace(this._markdownRegex, '.html');
