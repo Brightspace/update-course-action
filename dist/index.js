@@ -7899,7 +7899,7 @@ module.exports = class TopicProcessor {
 	async _updateTopic(instanceUrl, orgUnit, topic, lmsTopic) {
 		const fileName = topic.fileName.replace(this._markdownRegex, '.html');
 
-		console.log(`Updating topic: '${topic.title}' with file: '${fileName}'`);
+		console.log(`Updating topic: '${topic.title}'`);
 
 		const url = new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Identifier}/content/topics/${lmsTopic.Id}`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'PUT');
@@ -7929,6 +7929,8 @@ module.exports = class TopicProcessor {
 			}
 		}
 
+		console.log(`Updating topic file: '${fileName}'`);
+
 		const fileUrl = new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Identifier}/content/topics/${lmsTopic.Id}/file`, instanceUrl);
 		const signedFileUrl = this._valence.createAuthenticatedUrl(fileUrl, 'PUT');
 
@@ -7948,7 +7950,7 @@ module.exports = class TopicProcessor {
 				{
 					method: 'PUT',
 					headers: {
-						'Content-Type': `${formData.getHeaders()}`
+						'Content-Type': `multipart/form-data; boundary=${formData.getBoundary()}`
 					},
 					body: formData
 				});
