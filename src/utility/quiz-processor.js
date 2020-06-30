@@ -52,6 +52,9 @@ module.exports = class QuizProcessor {
 			signedUrl,
 			{
 				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
 				body: JSON.stringify(topic)
 			}
 		);

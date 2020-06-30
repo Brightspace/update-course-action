@@ -191,6 +191,10 @@ test('updates topic', async t => {
 			return false;
 		}
 
+		t.deepEqual(options.headers, {
+			'Content-Type': 'application/json'
+		});
+
 		t.deepEqual(JSON.parse(options.body), {
 			Id: 2,
 			Title: 'Test Topic',
@@ -276,6 +280,10 @@ test('updates hidden topic', async t => {
 		if (!options.body.includes('resource.txt')) {
 			return false;
 		}
+
+		t.deepEqual(options.headers, {
+			'Content-Type': 'application/json'
+		});
 
 		t.deepEqual(JSON.parse(options.body), {
 			Id: 3,

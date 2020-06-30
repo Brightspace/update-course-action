@@ -554,6 +554,9 @@ module.exports = class QuizProcessor {
 			signedUrl,
 			{
 				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
 				body: JSON.stringify(topic)
 			}
 		);
@@ -7922,6 +7925,9 @@ module.exports = class TopicProcessor {
 				signedUrl,
 				{
 					method: 'PUT',
+					headers: {
+						'Content-Type': 'application/json'
+					},
 					body: JSON.stringify(body)
 				});
 
@@ -8076,6 +8082,9 @@ module.exports = class ModuleProcessor {
 			signedUrl,
 			{
 				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
 				body: JSON.stringify(createModule)
 			});
 
@@ -8113,6 +8122,9 @@ module.exports = class ModuleProcessor {
 			signedUrl,
 			{
 				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json'
+				},
 				body: JSON.stringify(body)
 			});
 

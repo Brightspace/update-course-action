@@ -55,6 +55,10 @@ test('creates quiz topic', async t => {
 			return false;
 		}
 
+		t.deepEqual(options.headers, {
+			'Content-Type': 'application/json'
+		});
+
 		t.deepEqual(JSON.parse(options.body), {
 			Title: 'Test Quiz',
 			ShortTitle: 'Test Quiz',
