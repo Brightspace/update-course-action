@@ -72,7 +72,7 @@ test('creates module', async t => {
 			IsHidden: false,
 			IsLocked: false,
 			Description: {
-				Content: '<html></html>\n',
+				Content: '<html><head></head><body>\n</body></html>',
 				Type: 'Html'
 			}
 		});
@@ -128,6 +128,10 @@ test('creates module', async t => {
 					Html: '<html></html>\n'
 				}
 			});
+
+			return {
+				Id: 2
+			};
 		}
 	}
 
@@ -153,13 +157,35 @@ test('creates module', async t => {
 					Html: '<html></html>\n'
 				}
 			});
+
+			return {
+				Id: 3
+			};
 		}
 	}
 
 	const processor = new ModuleProcessor({ contentPath: ContentPath }, MockValence, fetch, MockTopicProcessor, MockQuizProcessor);
 
-	await processor.processModule(url, OrgUnit, TestModule);
+	const structure = await processor.processModule(url, OrgUnit, TestModule);
 
+	t.deepEqual(structure, [{
+		Id: 1,
+		Title: 'Test Module',
+		ShortTitle: 'Test Module',
+		Type: 0,
+		ModuleStartDate: null,
+		ModuleEndDate: null,
+		ModuleDueDate: '2020-01-01T00:00:00.000Z',
+		IsHidden: false,
+		IsLocked: false,
+		Description: {
+			Html: '<html></html>\n'
+		}
+	}, {
+		Id: 2
+	}, {
+		Id: 3
+	}]);
 	t.true(fetch.done());
 });
 
@@ -205,7 +231,7 @@ test('updates module', async t => {
 			IsHidden: false,
 			IsLocked: false,
 			Description: {
-				Content: '<html></html>\n',
+				Content: '<html><head></head><body>\n</body></html>',
 				Type: 'Html'
 			}
 		});
@@ -250,6 +276,10 @@ test('updates module', async t => {
 					Html: '<html></html>\n'
 				}
 			});
+
+			return {
+				Id: 2
+			};
 		}
 	}
 
@@ -275,13 +305,35 @@ test('updates module', async t => {
 					Html: '<html></html>\n'
 				}
 			});
+
+			return {
+				Id: 3
+			};
 		}
 	}
 
 	const processor = new ModuleProcessor({ contentPath: ContentPath }, MockValence, fetch, MockTopicProcessor, MockQuizProcessor);
 
-	await processor.processModule(url, OrgUnit, TestModule);
+	const structure = await processor.processModule(url, OrgUnit, TestModule);
 
+	t.deepEqual(structure, [{
+		Id: 1,
+		Title: 'Test Module',
+		ShortTitle: 'Test Module',
+		Type: 0,
+		ModuleStartDate: null,
+		ModuleEndDate: null,
+		ModuleDueDate: '2020-01-01T00:00:00.000Z',
+		IsHidden: false,
+		IsLocked: false,
+		Description: {
+			Html: '<html></html>\n'
+		}
+	}, {
+		Id: 2
+	}, {
+		Id: 3
+	}]);
 	t.true(fetch.done());
 });
 
@@ -326,7 +378,7 @@ test('creates submodule', async t => {
 			IsHidden: false,
 			IsLocked: false,
 			Description: {
-				Content: '<html></html>\n',
+				Content: '<html><head></head><body>\n</body></html>',
 				Type: 'Html'
 			}
 		});
@@ -382,6 +434,10 @@ test('creates submodule', async t => {
 					Html: '<html></html>\n'
 				}
 			});
+
+			return {
+				Id: 3
+			};
 		}
 	}
 
@@ -407,12 +463,16 @@ test('creates submodule', async t => {
 					Html: '<html></html>\n'
 				}
 			});
+
+			return {
+				Id: 4
+			};
 		}
 	}
 
 	const processor = new ModuleProcessor({ contentPath: ContentPath }, MockValence, fetch, MockTopicProcessor, MockQuizProcessor);
 
-	await processor.processModule(url, OrgUnit, TestModule, {
+	const structure = await processor.processModule(url, OrgUnit, TestModule, {
 		Id: 1,
 		Type: 0,
 		Title: 'Parent Module',
@@ -427,6 +487,24 @@ test('creates submodule', async t => {
 		}
 	});
 
+	t.deepEqual(structure, [{
+		Id: 2,
+		Title: 'Test Module',
+		ShortTitle: 'Test Module',
+		Type: 0,
+		ModuleStartDate: null,
+		ModuleEndDate: null,
+		ModuleDueDate: '2020-01-01T00:00:00.000Z',
+		IsHidden: false,
+		IsLocked: false,
+		Description: {
+			Html: '<html></html>\n'
+		}
+	}, {
+		Id: 3
+	}, {
+		Id: 4
+	}]);
 	t.true(fetch.done());
 });
 
@@ -485,7 +563,7 @@ test('updates submodule', async t => {
 			IsHidden: false,
 			IsLocked: false,
 			Description: {
-				Content: '<html></html>\n',
+				Content: '<html><head></head><body>\n</body></html>',
 				Type: 'Html'
 			}
 		});
@@ -541,6 +619,10 @@ test('updates submodule', async t => {
 					Html: '<html></html>\n'
 				}
 			});
+
+			return {
+				Id: 3
+			};
 		}
 	}
 
@@ -566,12 +648,16 @@ test('updates submodule', async t => {
 					Html: '<html></html>\n'
 				}
 			});
+
+			return {
+				Id: 4
+			};
 		}
 	}
 
 	const processor = new ModuleProcessor({ contentPath: ContentPath }, MockValence, fetch, MockTopicProcessor, MockQuizProcessor);
 
-	await processor.processModule(url, OrgUnit, TestModule, {
+	const structure = await processor.processModule(url, OrgUnit, TestModule, {
 		Id: 1,
 		Type: 0,
 		Title: 'Parent Module',
@@ -586,6 +672,24 @@ test('updates submodule', async t => {
 		}
 	});
 
+	t.deepEqual(structure, [{
+		Id: 2,
+		Title: 'Test Module',
+		ShortTitle: 'Test Module',
+		Type: 0,
+		ModuleStartDate: null,
+		ModuleEndDate: null,
+		ModuleDueDate: '2020-01-01T00:00:00.000Z',
+		IsHidden: false,
+		IsLocked: false,
+		Description: {
+			Html: '<html></html>\n'
+		}
+	}, {
+		Id: 3
+	}, {
+		Id: 4
+	}]);
 	t.true(fetch.done());
 });
 

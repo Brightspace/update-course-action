@@ -25,6 +25,8 @@ module.exports = class ModuleProcessor {
 	}
 
 	async processModule(instanceUrl, orgUnit, module, parentModule = null) {
+		const structure = [];
+
 		const items = await this._getContent(instanceUrl, orgUnit, parentModule);
 		let self = Array.isArray(items) && items.find(m => m.Type === 0 && m.Title === module.title);
 
@@ -34,27 +36,35 @@ module.exports = class ModuleProcessor {
 			self = await this._createModule(instanceUrl, orgUnit, module, parentModule);
 		}
 
+		structure.push(self);
+
 		// Order matters on creates, so not using .map()
 		/* eslint-disable no-await-in-loop */
 		for (const child of module.children) {
+			let result;
 			switch (child.type) {
 				case 'module':
-					await this.processModule(instanceUrl, orgUnit, child, self);
+					result = await this.processModule(instanceUrl, orgUnit, child, self);
+					structure.push(...result);
 					break;
 				case 'quiz':
-					await this._quizProcessor.processQuiz(instanceUrl, orgUnit, child, self);
+					result = await this._quizProcessor.processQuiz(instanceUrl, orgUnit, child, self);
+					structure.push(result);
 					break;
 				case 'resource':
 					await this._processResource(instanceUrl, orgUnit, child, self);
 					break;
 				case 'topic':
-					await this._topicProcessor.processTopic({ instanceUrl, orgUnit, topic: child, parentModule: self });
+					result = await this._topicProcessor.processTopic({ instanceUrl, orgUnit, topic: child, parentModule: self });
+					structure.push(result);
 					break;
 				default:
 					throw new Error(`Unknown content type: ${child.type}`);
 			}
 		}
 		/* eslint-enable no-await-in-loop */
+
+		return structure;
 	}
 
 	async _createModule(instanceUrl, orgUnit, module, parentModule) {

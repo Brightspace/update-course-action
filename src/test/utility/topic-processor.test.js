@@ -1,5 +1,6 @@
 'use strict';
 
+const fs = require('fs');
 const path = require('path');
 const test = require('ava');
 const FormData = require('form-data');
@@ -39,6 +40,7 @@ const ParentModule = {
 test('creates topic', async t => {
 	const url = new URL('https://example.com');
 	const fetch = fetchMock.sandbox();
+	const fileData = await fs.promises.readFile(`${ContentPath}/test-module/test-topic.html`);
 
 	fetch.get({
 		url: 'https://example.com/d2l/api/le/1.44/123/content/modules/1/structure/'
@@ -66,7 +68,7 @@ test('creates topic', async t => {
 			+ `--${formdata.getBoundary()}\r\n`
 			+ 'Content-Disposition: form-data; name=""; filename="test-topic.html"\r\n'
 			+ 'Content-Type: text/html\r\n\r\n'
-			+ '<h1></h1>\n\r\n'
+			+ `${fileData}\r\n`
 			+ `--${formdata.getBoundary()}--\r\n`);
 
 		return true;
@@ -167,6 +169,7 @@ test('creates hidden topic', async t => {
 test('updates topic', async t => {
 	const url = new URL('https://example.com');
 	const fetch = fetchMock.sandbox();
+	const fileData = await fs.promises.readFile(`${ContentPath}/test-module/test-topic.html`);
 
 	fetch.get({
 		url: 'https://example.com/d2l/api/le/1.44/123/content/modules/1/structure/'
@@ -230,7 +233,7 @@ test('updates topic', async t => {
 		t.is(formdata.getBuffer().toString('utf-8'), `--${formdata.getBoundary()}\r\n`
 			+ 'Content-Disposition: form-data; name="file"; filename="test-topic.html"\r\n'
 			+ 'Content-Type: text/html\r\n\r\n'
-			+ '<h1></h1>\n\r\n'
+			+ `${fileData}\r\n`
 			+ `--${formdata.getBoundary()}--\r\n`);
 
 		return true;

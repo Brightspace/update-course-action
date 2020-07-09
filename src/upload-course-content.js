@@ -43,11 +43,15 @@ module.exports = class UploadCourseContent {
 
 		const manifest = await this._getManifest();
 
+		const structure = [];
 		// Order matters on creates, so not using .map()
 		for (const module of manifest.modules) {
 			// eslint-disable-next-line no-await-in-loop
-			await this._moduleProcessor.processModule(instanceUrl, orgUnit, module);
+			const data = await this._moduleProcessor.processModule(instanceUrl, orgUnit, module);
+			structure.push(...data);
 		}
+
+		return structure;
 	}
 
 	async _getManifest() {

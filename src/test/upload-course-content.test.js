@@ -66,12 +66,19 @@ test('uploadCourseContent processes module', async t => {
 					fileName: 'test-module/resource.txt'
 				}]
 			});
+
+			return [{
+				Id: '1'
+			}];
 		}
 	}
 
 	const uploader = new UploadCourseContent({ contentDirectory: ContentPath, manifestPath: ManifestPath }, MockValence, fetch, MockModuleProcessor);
 
-	await uploader.uploadCourseContent(url, 123);
+	const structure = await uploader.uploadCourseContent(url, 123);
 
+	t.deepEqual(structure, [{
+		Id: '1'
+	}]);
 	t.true(fetch.done());
 });

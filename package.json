@@ -12,6 +12,7 @@
     "form-data": "^3.0.0",
     "mime": "^2.4.6",
     "node-fetch": "^2.6.0",
+    "parse5": "^6.0.0",
     "validator": "^13.1.1"
   },
   "devDependencies": {
