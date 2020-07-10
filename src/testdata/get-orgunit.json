@@ -1,0 +1,9 @@
+{
+  "status": 200,
+  "body": {
+    "Identifier": "123",
+    "Name": "Course Offering",
+    "Code": "Code",
+    "IsActive": true
+  }
+}

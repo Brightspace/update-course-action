@@ -1,0 +1,18 @@
+{
+  "status": 200,
+  "body": {
+    "Id": 2,
+    "ModuleStartDate": null,
+    "ModuleEndDate": null,
+    "ModuleDueDate": "2020-01-01T00.00.000Z",
+    "IsHidden": false,
+    "IsLocked": false,
+    "Title": "Title",
+    "ShortTitle": "ShortTitle",
+    "Type": 0,
+    "Description": {
+      "Html": "<html></html>"
+    },
+    "ParentModuleId": 1
+  }
+}
