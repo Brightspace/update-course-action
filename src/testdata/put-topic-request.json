@@ -15,6 +15,7 @@
     "Url": "/content/course123/test-module/test-topic.html",
     "IsHidden": false,
     "IsLocked": false,
-    "IsExempt": true
+    "IsExempt": true,
+    "ResetCompletionTracking": true
   }
 }

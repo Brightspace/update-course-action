@@ -1,0 +1,17 @@
+{
+  "status": 200,
+  "body": {
+    "Id": 3,
+    "Title": "Test Quiz",
+    "ShortTitle": "Test Quiz",
+    "Type": 1,
+    "TopicType": 3,
+    "StartDate": null,
+    "EndDate": null,
+    "DueDate": null,
+    "Url": "/d2l/common/dialogs/quickLink/quickLink.d2l?ou=123&type=quiz&rcode=Dev-1",
+    "IsHidden": false,
+    "IsLocked": false,
+    "IsExempt": true
+  }
+}

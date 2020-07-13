@@ -4,8 +4,8 @@
     {
       "Id": 1,
       "Type": 0,
-      "Title": "Module",
-      "ShortTitle": "Module",
+      "Title": "Test Module",
+      "ShortTitle": "Test Module",
       "ModuleStartDate": null,
       "ModuleEndDate": null,
       "ModuleDueDate": "2020-01-01T00:00:00.000Z",

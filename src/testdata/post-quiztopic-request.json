@@ -1,0 +1,19 @@
+{
+  "url": "https://example.com/d2l/api/le/1.44/123/content/modules/1/structure/",
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": {
+    "Title": "Test Quiz",
+    "ShortTitle": "Test Quiz",
+    "Type": 1,
+    "TopicType": 3,
+    "StartDate": null,
+    "EndDate": null,
+    "DueDate": null,
+    "Url": "/d2l/common/dialogs/quickLink/quickLink.d2l?ou=123&type=quiz&rcode=Dev-1",
+    "IsHidden": false,
+    "IsLocked": false,
+    "IsExempt": true
+  }
+}

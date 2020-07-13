@@ -1,15 +1,17 @@
 'use strict';
 
 const FormData = require('form-data');
-const { LEVersion, LPVersion } = require('../constants');
+const { DryRunId, LEVersion, LPVersion } = require('../constants');
 const ContentFactory = require('../utility/content-factory');
 
 module.exports = class ValenceApi {
 	constructor(
 		valence,
+		isDryRun,
 		fetch = require('node-fetch')
 	) {
 		this._valence = valence;
+		this._isDryRun = isDryRun;
 		this._fetch = fetch;
 	}
 
@@ -19,9 +21,29 @@ module.exports = class ValenceApi {
 			: new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Identifier}/content/root/`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'GET');
 
+		if (this._isDryRun && module && module.id === DryRunId) {
+			return [{
+				Id: DryRunId,
+				Type: 0
+			}];
+		}
+
 		const response = await this._fetch(signedUrl);
 
 		this._assertResponse(response);
+
+		return response.json();
+	}
+
+	async _getQuizzes(instanceUrl, orgUnit) {
+		const url = new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Identifier}/quizzes/`, instanceUrl);
+		const signedUrl = this._valence.createAuthenticatedUrl(url, 'GET');
+
+		const response = await this._fetch(signedUrl);
+
+		if (!response.ok) {
+			throw new Error(response.statusText);
+		}
 
 		return response.json();
 	}
@@ -44,11 +66,20 @@ module.exports = class ValenceApi {
 
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'POST');
 
+		console.log(`Creating module: '${module.title}'`);
+
 		const createModule = ContentFactory.createModule({
 			title: module.title,
 			description: module.description,
 			dueDate: module.dueDate
 		});
+
+		if (this._isDryRun) {
+			return {
+				...module,
+				id: DryRunId
+			};
+		}
 
 		const response = await this._fetch(
 			signedUrl,
@@ -71,6 +102,8 @@ module.exports = class ValenceApi {
 		const url = new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Identifier}/content/modules/${self.Id}`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'PUT');
 
+		console.log(`Updating module: '${self.Title}'`);
+
 		let isDirty = false;
 		if (self.Title !== module.title) {
 			self.Title = module.title;
@@ -92,6 +125,10 @@ module.exports = class ValenceApi {
 			return module;
 		}
 
+		if (this._isDryRun) {
+			return module;
+		}
+
 		const response = await this._fetch(
 			signedUrl,
 			{
@@ -108,8 +145,8 @@ module.exports = class ValenceApi {
 	}
 
 	async assertTopic(instanceUrl, orgUnit, { module, topic, data }) {
-		const contents = await this._getContent(instanceUrl, orgUnit, module);
-		const self = Array.isArray(contents) && contents.find(x => x.Type === 1 && x.Title === topic.title);
+		const content = await this._getContent(instanceUrl, orgUnit, module);
+		const self = Array.isArray(content) && content.find(x => x.Type === 1 && x.Title === topic.title);
 
 		if (!self) {
 			return this._createTopic(instanceUrl, orgUnit, { module, topic, data });
@@ -124,6 +161,8 @@ module.exports = class ValenceApi {
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'POST');
 
 		const fileName = topic.fileName.replace(/.md$/, '.html');
+		console.log(`Creating topic: '${topic.title}' with file: '${fileName}'`);
+
 		const createTopic = ContentFactory.createTopic({
 			title: topic.title,
 			url: `${orgUnit.Path}${fileName}`,
@@ -143,6 +182,13 @@ module.exports = class ValenceApi {
 			data,
 			{ filename: fileName }
 		);
+
+		if (this._isDryRun) {
+			return {
+				...topic,
+				id: DryRunId
+			};
+		}
 
 		const response = await this._fetch(
 			signedUrl,
@@ -165,6 +211,8 @@ module.exports = class ValenceApi {
 		const url = new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Identifier}/content/topics/${self.Id}`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'PUT');
 
+		console.log(`Updating topic: '${self.Title}'`);
+
 		let isDirty = false;
 		if (self.Title !== topic.title) {
 			self.Title = topic.title;
@@ -183,6 +231,12 @@ module.exports = class ValenceApi {
 		}
 
 		if (!isDirty) {
+			return topic;
+		}
+
+		self.ResetCompletionTracking = true;
+
+		if (this._isDryRun) {
 			return topic;
 		}
 
@@ -206,12 +260,18 @@ module.exports = class ValenceApi {
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'PUT');
 
 		const fileName = topic.fileName.replace(/.md$/, '.html');
+		console.log(`Updating topic file: '${fileName}'`);
+
 		const formData = new FormData();
 		formData.append(
 			'file',
 			data,
 			{ filename: `${fileName}` }
 		);
+
+		if (this._isDryRun) {
+			return topic;
+		}
 
 		const response = await this._fetch(
 			signedUrl,
@@ -226,6 +286,60 @@ module.exports = class ValenceApi {
 		this._assertResponse(response);
 
 		return this._convertTopic(topic, self.Id);
+	}
+
+	async assertQuiz(instanceUrl, orgUnit, quiz, module) {
+		const content = await this._getContent(instanceUrl, orgUnit, module);
+		const self = Array.isArray(content) && content.find(x => x.Type === 1 && x.TopicType === 3 && x.Title === quiz.title);
+
+		if (self) {
+			// Nothing to do, the quicklink exists
+			return quiz;
+		}
+
+		const quizzes = await this._getQuizzes(instanceUrl, orgUnit);
+		const quizItem = quizzes.Objects && Array.isArray(quizzes.Objects) && quizzes.Objects.find(x => x.Name === quiz.title);
+
+		return this._createQuizTopic(instanceUrl, orgUnit, { module, quiz, quizItem });
+	}
+
+	async _createQuizTopic(instanceUrl, orgUnit, { module, quiz, quizItem }) {
+		const url = new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Identifier}/content/modules/${module.Id || module.id}/structure/`, instanceUrl);
+		const signedUrl = this._valence.createAuthenticatedUrl(url, 'POST');
+
+		console.log(`Creating quiz topic: '${quiz.title}'`);
+
+		const rcode = quizItem.ActivityId.split('/').slice(-1)[0];
+		const topic = ContentFactory.createTopic({
+			title: quiz.title,
+			topicType: 3,
+			url: `/d2l/common/dialogs/quickLink/quickLink.d2l?ou=${orgUnit.Identifier}&type=quiz&rcode=${rcode}`,
+			isExempt: !quiz.isRequired
+		});
+
+		if (this._dryRun) {
+			return {
+				...quiz,
+				id: DryRunId
+			};
+		}
+
+		const response = await this._fetch(
+			signedUrl,
+			{
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(topic)
+			}
+		);
+
+		this._assertResponse(response);
+
+		const json = await response.json();
+
+		return this._convertTopic(quiz, json.Id);
 	}
 
 	async getOrgUnit(instanceUrl, orgUnitId) {
@@ -260,7 +374,11 @@ module.exports = class ValenceApi {
 
 	_convertModule(module, id) {
 		return {
-			...module,
+			title: module.title,
+			type: module.type,
+			description: module.description,
+			descriptionFileName: module.descriptionFileName,
+			dueDate: module.dueDate,
 			id
 		};
 	}

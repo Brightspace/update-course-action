@@ -1,0 +1,11 @@
+{
+  "status": 200,
+  "body": {
+    "Next": null,
+    "Objects": [{
+      "QuizId": 1,
+      "Name": "Test Quiz",
+      "ActivityId": "https://ids.brightspace.com/activities/quiz/Dev-1"
+    }]
+  }
+}
