@@ -6,16 +6,16 @@
   "body": {
     "Id": 1,
     "Title": "NewTitle",
-    "ShortTitle": "NewShortTitle",
+    "ShortTitle": "NewTitle",
     "Type": 0,
     "ModuleStartDate": null,
     "ModuleEndDate": null,
-    "ModuleDueDate": "2020-01-01T00:00:000.0Z",
+    "ModuleDueDate": "2020-01-01T00:00:00.000Z",
+    "ParentModuleId": null,
     "IsHidden": false,
     "IsLocked": false,
     "Description": {
-      "Content": "<html>Update!</html>",
-      "Type": "Html"
+      "Html": "<html>Update!</html>"
     }
   }
 }
