@@ -78,6 +78,6 @@ module.exports = class Processor {
 
 		const descriptionFileName = module.descriptionFileName.replace(/.md$/, '.html');
 		const buffer = await fs.promises.readFile(`${this._contentPath}/${descriptionFileName}`);
-		return buffer.toString();
+		return buffer.toString('utf-8');
 	}
 };
