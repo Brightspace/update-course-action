@@ -1749,7 +1749,7 @@ module.exports = class Processor {
 	async processModule(instanceUrl, orgUnit, module, parentModule = null) {
 		const results = [];
 
-		module.description = await (await this._getDescription(module)).toString('utf-8');
+		module.description = await this._getDescription(module);
 
 		const self = await this._valence.assertModule(instanceUrl, orgUnit, module, parentModule);
 		results.push(self);
@@ -1796,7 +1796,8 @@ module.exports = class Processor {
 	async _processTopic(instanceUrl, orgUnit, topic, module) {
 		const fileName = topic.fileName.replace(/.md$/, '.html');
 
-		const data = await (await fs.promises.readFile(`${this._contentPath}/${fileName}`)).toString('utf-8');
+		const buffer = await fs.promises.readFile(`${this._contentPath}/${fileName}`);
+		const data = buffer.toString('utf-8');
 
 		return this._valence.assertTopic(instanceUrl, orgUnit, { module, topic, data });
 	}
@@ -1811,7 +1812,8 @@ module.exports = class Processor {
 		}
 
 		const descriptionFileName = module.descriptionFileName.replace(/.md$/, '.html');
-		return fs.promises.readFile(`${this._contentPath}/${descriptionFileName}`);
+		const buffer = await fs.promises.readFile(`${this._contentPath}/${descriptionFileName}`);
+		return buffer.toString('utf-8');
 	}
 };
 
@@ -7641,11 +7643,11 @@ module.exports = class ValenceApi {
 		}
 
 		if (!isDirty) {
-			return module;
+			return this._convertModule(module, self.Id);
 		}
 
 		if (this._isDryRun) {
-			return module;
+			return this._convertModule(module, self.Id);
 		}
 
 		const response = await this._fetch(
@@ -7750,13 +7752,13 @@ module.exports = class ValenceApi {
 		}
 
 		if (!isDirty) {
-			return topic;
+			return this._convertTopic(topic, self.Id);
 		}
 
 		self.ResetCompletionTracking = true;
 
 		if (this._isDryRun) {
-			return topic;
+			return this._convertTopic(topic, self.Id);
 		}
 
 		const response = await this._fetch(
@@ -7789,7 +7791,7 @@ module.exports = class ValenceApi {
 		);
 
 		if (this._isDryRun) {
-			return topic;
+			return this._convertTopic(topic, self.Id);
 		}
 
 		const response = await this._fetch(
@@ -7836,7 +7838,7 @@ module.exports = class ValenceApi {
 			isExempt: !quiz.isRequired
 		});
 
-		if (this._dryRun) {
+		if (this._isDryRun) {
 			return {
 				...quiz,
 				id: DryRunId

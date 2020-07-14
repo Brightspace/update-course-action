@@ -122,11 +122,11 @@ module.exports = class ValenceApi {
 		}
 
 		if (!isDirty) {
-			return module;
+			return this._convertModule(module, self.Id);
 		}
 
 		if (this._isDryRun) {
-			return module;
+			return this._convertModule(module, self.Id);
 		}
 
 		const response = await this._fetch(
@@ -231,13 +231,13 @@ module.exports = class ValenceApi {
 		}
 
 		if (!isDirty) {
-			return topic;
+			return this._convertTopic(topic, self.Id);
 		}
 
 		self.ResetCompletionTracking = true;
 
 		if (this._isDryRun) {
-			return topic;
+			return this._convertTopic(topic, self.Id);
 		}
 
 		const response = await this._fetch(
@@ -270,7 +270,7 @@ module.exports = class ValenceApi {
 		);
 
 		if (this._isDryRun) {
-			return topic;
+			return this._convertTopic(topic, self.Id);
 		}
 
 		const response = await this._fetch(
@@ -317,7 +317,7 @@ module.exports = class ValenceApi {
 			isExempt: !quiz.isRequired
 		});
 
-		if (this._dryRun) {
+		if (this._isDryRun) {
 			return {
 				...quiz,
 				id: DryRunId
