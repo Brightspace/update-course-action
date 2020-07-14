@@ -16,8 +16,7 @@ async function run() {
 	};
 	const uploader = new UploadCourseContent(inputs, api);
 
-	const results = await uploader.uploadCourseContent(validator.getInstanceDomain(), validator.getCourseOrgUnitId());
-	console.log(results);
+	await uploader.uploadCourseContent(validator.getInstanceDomain(), validator.getCourseOrgUnitId());
 }
 
 run().catch(error => core.setFailed(error.message));
