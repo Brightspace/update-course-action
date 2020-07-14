@@ -45,3 +45,9 @@ test('renders markdown', async t => {
 	t.is(info.data.toString('utf-8'), '<h1 id="markdown">Markdown!</h1>\n');
 });
 
+test('throws on markdown render timeout', async t => {
+	const handler = new FileHandler('content', 0);
+	await t.throwsAsync(async () => {
+		await handler.getContent('test.md');
+	});
+});

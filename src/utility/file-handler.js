@@ -1,6 +1,6 @@
 'use strict';
 
-const marked = require('marked');
+const renderMarkdown = require('./markdown-worker');
 const mime = require('mime');
 const fs = require('fs');
 
@@ -14,17 +14,10 @@ module.exports = class FileHandler {
 		this._timeoutDuration = timeout;
 	}
 
-	async _renderMarkdown(toRender) {
-		const html = marked(toRender.toString('utf-8'));
-		console.log('finished markdown rendering');
-		return Buffer.from(html);
-	}
-
 	async _timeout(ms) {
 		return new Promise((resolve, reject) => {
 			const id = setTimeout(() => {
 				clearTimeout(id);
-				console.log('rejecting promise');
 				reject(new Error('Markdown renderer timed out.'));
 			}, ms);
 		});
@@ -40,8 +33,9 @@ module.exports = class FileHandler {
 
 		// If the file is a markdown file, render it to HTML.
 		if (mimeType === 'text/markdown') {
+			// Run the render logic in a worker with a timeout
 			data = await Promise.race([
-				this._renderMarkdown(data),
+				renderMarkdown(data),
 				this._timeout(this._timeoutDuration)
 			]).catch(error => {
 				throw error;

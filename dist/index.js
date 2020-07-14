@@ -106,6 +106,13 @@ module.exports.default = exports.default;
 
 /***/ }),
 
+/***/ 13:
+/***/ (function(module) {
+
+module.exports = require("worker_threads");
+
+/***/ }),
+
 /***/ 15:
 /***/ (function(module) {
 
@@ -3108,6 +3115,43 @@ module.exports.default = exports.default;
 
 var Mime = __webpack_require__(217);
 module.exports = new Mime(__webpack_require__(460), __webpack_require__(983));
+
+
+/***/ }),
+
+/***/ 452:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+"use strict";
+
+
+const {
+	Worker, isMainThread, parentPort, workerData
+} = __webpack_require__(13);
+const marked = __webpack_require__(886);
+
+if (isMainThread) {
+	module.exports = function (toRender) {
+		return new Promise((resolve, reject) => {
+			const worker = new Worker(__filename, {
+				workerData: toRender.toString('utf-8')
+			});
+			worker.on('message', html => {
+				const data = Buffer.from(html);
+				resolve(data);
+			});
+			worker.on('error', reject);
+			worker.on('exit', code => {
+				if (code !== 0) {
+					reject(new Error(`Worker stopped with exit code ${code}`));
+				}
+			});
+		});
+	};
+} else {
+	const renderedHtml = marked(workerData);
+	parentPort.postMessage(renderedHtml);
+}
 
 
 /***/ }),
@@ -7283,7 +7327,7 @@ module.exports.default = exports.default;
 "use strict";
 
 
-const marked = __webpack_require__(886);
+const renderMarkdown = __webpack_require__(452);
 const mime = __webpack_require__(444);
 const fs = __webpack_require__(747);
 
@@ -7297,17 +7341,10 @@ module.exports = class FileHandler {
 		this._timeoutDuration = timeout;
 	}
 
-	async _renderMarkdown(toRender) {
-		const html = marked(toRender.toString('utf-8'));
-		console.log('finished markdown rendering');
-		return Buffer.from(html);
-	}
-
 	async _timeout(ms) {
 		return new Promise((resolve, reject) => {
 			const id = setTimeout(() => {
 				clearTimeout(id);
-				console.log('rejecting promise');
 				reject(new Error('Markdown renderer timed out.'));
 			}, ms);
 		});
@@ -7323,8 +7360,9 @@ module.exports = class FileHandler {
 
 		// If the file is a markdown file, render it to HTML.
 		if (mimeType === 'text/markdown') {
+			// Run the render logic in a worker with a timeout
 			data = await Promise.race([
-				this._renderMarkdown(data),
+				renderMarkdown(data),
 				this._timeout(this._timeoutDuration)
 			]).catch(error => {
 				throw error;
