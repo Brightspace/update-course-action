@@ -1,0 +1,19 @@
+{
+  "status": 200,
+  "body": [
+    {
+      "Id": 2,
+      "Title": "Test Topic",
+      "ShortTitle": "Test Topic",
+      "Type": 1,
+      "TopicType": 1,
+      "StartDate": null,
+      "EndDate": null,
+      "DueDate": null,
+      "Url": "/content/course123/test-module/test-topic.html",
+      "IsHidden": false,
+      "IsLocked": false,
+      "IsExempt": true
+    }
+  ]
+}

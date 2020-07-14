@@ -1,0 +1,20 @@
+{
+  "url": "https://example.com/d2l/api/le/1.44/123/content/root/",
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": {
+    "Title": "Test Module",
+    "ShortTitle": "Test Module",
+    "Type": 0,
+    "ModuleStartDate": null,
+    "ModuleEndDate": null,
+    "ModuleDueDate": "2020-01-01T00:00:00.000Z",
+    "IsHidden": false,
+    "IsLocked": false,
+    "Description": {
+      "Content": "<html></html>\n",
+      "Type": "Html"
+    }
+  }
+}

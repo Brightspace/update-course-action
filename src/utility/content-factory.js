@@ -18,7 +18,7 @@ module.exports = class ContentFactory {
 			ModuleDueDate: dueDate,
 			IsHidden: false,
 			IsLocked: false,
-			Description: description
+			Description: ContentFactory.createRichText(description, 'Html')
 		};
 	}
 

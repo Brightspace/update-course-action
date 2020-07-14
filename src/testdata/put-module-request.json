@@ -1,0 +1,21 @@
+{
+  "url": "https://example.com/d2l/api/le/1.44/123/content/modules/1",
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": {
+    "Id": 1,
+    "Title": "NewTitle",
+    "ShortTitle": "NewTitle",
+    "Type": 0,
+    "ModuleStartDate": null,
+    "ModuleEndDate": null,
+    "ModuleDueDate": "2020-01-01T00:00:00.000Z",
+    "ParentModuleId": null,
+    "IsHidden": false,
+    "IsLocked": false,
+    "Description": {
+      "Html": "<html>Update!</html>"
+    }
+  }
+}

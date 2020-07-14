@@ -1,0 +1,9 @@
+{
+  "status": 200,
+  "body": {
+    "Identifier": "100",
+    "FirstName": "First",
+    "LastName": "Last",
+    "UniqueName": "UserName"
+  }
+}

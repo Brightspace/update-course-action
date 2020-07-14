@@ -2,18 +2,11 @@
 
 const path = require('path');
 const test = require('ava');
-const fetchMock = require('fetch-mock');
 
 const UploadCourseContent = require('../upload-course-content');
 
 const ContentPath = path.join(__dirname, 'content');
 const ManifestPath = path.join(__dirname, 'content/manifest.json');
-
-const MockValence = {
-	createAuthenticatedUrl(url) {
-		return url;
-	}
-};
 
 const OrgUnit = {
 	Identifier: '123',
@@ -21,27 +14,20 @@ const OrgUnit = {
 	Path: '/content/course123/'
 };
 
+const User = {
+	UniqueName: 'Test User'
+};
+
+const ValenceApiMock = {
+	getOrgUnit: async () => {
+		return OrgUnit;
+	},
+	whoAmI: async () => {
+		return User;
+	}
+};
+
 test('uploadCourseContent processes module', async t => {
-	const url = new URL('https://example.com');
-
-	const fetch = fetchMock.sandbox();
-	fetch.get({
-		url: 'https://example.com/d2l/api/lp/1.26/users/whoami'
-	}, {
-		body: {
-			UniqueName: 'Test User'
-		}
-	});
-	fetch.get({
-		url: 'https://example.com/d2l/api/lp/1.26/courses/123'
-	}, {
-		body: {
-			Identifier: '123',
-			Name: 'Org Unit',
-			Path: '/content/course123/'
-		}
-	});
-
 	class MockModuleProcessor {
 		processModule(instanceUrl, orgUnit, module) {
 			t.is(instanceUrl.toString(), 'https://example.com/');
@@ -66,12 +52,60 @@ test('uploadCourseContent processes module', async t => {
 					fileName: 'test-module/resource.txt'
 				}]
 			});
+
+			return [{
+				id: 1,
+				title: 'Test Module',
+				type: 'module',
+				descriptionFileName: 'test-module/index.md',
+				dueDate: '2020-01-01T00:00:00.000Z'
+			},
+			{
+				id: 2,
+				title: 'Test Topic',
+				type: 'topic',
+				fileName: 'test-module/test-topic.md',
+				isRequired: true
+			},
+			{
+				id: 3,
+				title: 'Test Quiz',
+				type: 'quiz'
+			},
+			{
+				id: 4,
+				type: 'resource',
+				fileName: 'test-module/resource.txt'
+			}];
 		}
 	}
 
-	const uploader = new UploadCourseContent({ contentDirectory: ContentPath, manifestPath: ManifestPath }, MockValence, fetch, MockModuleProcessor);
+	const uploader = new UploadCourseContent({ contentDirectory: ContentPath, manifestPath: ManifestPath }, ValenceApiMock, MockModuleProcessor);
 
-	await uploader.uploadCourseContent(url, 123);
+	const response = await uploader.uploadCourseContent('https://example.com/', 123);
 
-	t.true(fetch.done());
+	t.deepEqual(response, [{
+		id: 1,
+		title: 'Test Module',
+		type: 'module',
+		descriptionFileName: 'test-module/index.md',
+		dueDate: '2020-01-01T00:00:00.000Z'
+	},
+	{
+		id: 2,
+		title: 'Test Topic',
+		type: 'topic',
+		fileName: 'test-module/test-topic.md',
+		isRequired: true
+	},
+	{
+		id: 3,
+		title: 'Test Quiz',
+		type: 'quiz'
+	},
+	{
+		id: 4,
+		type: 'resource',
+		fileName: 'test-module/resource.txt'
+	}]);
 });
