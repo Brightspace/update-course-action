@@ -49,12 +49,12 @@ test('uploadCourseContent processes module', async t => {
 			t.deepEqual(module, {
 				title: 'Test Module',
 				type: 'module',
-				descriptionFileName: 'test-module/index.md',
+				descriptionFileName: 'test-module/index.html',
 				dueDate: '2020-01-01T00:00:00.000Z',
 				children: [{
 					title: 'Test Topic',
 					type: 'topic',
-					fileName: 'test-module/test-topic.md',
+					fileName: 'test-module/test-topic.html',
 					isRequired: true
 				},
 				{

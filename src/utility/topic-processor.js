@@ -1,7 +1,5 @@
 'use strict';
 
-const fs = require('fs');
-const mime = require('mime');
 const FormData = require('form-data');
 
 const { DryRunFakeModule, LEVersion } = require('../constants');
@@ -9,17 +7,15 @@ const ContentFactory = require('./content-factory');
 
 module.exports = class TopicProcessor {
 	constructor(
-		{ contentPath, isDryRun = false },
+		{ fileHandler, isDryRun = false },
 		valence,
 		fetch = require('node-fetch')
 	) {
-		this._contentPath = contentPath;
+		this._fileHandler = fileHandler;
 		this._dryRun = isDryRun;
 
 		this._fetch = fetch;
 		this._valence = valence;
-
-		this._markdownRegex = /.md$/i;
 	}
 
 	async processTopic({ instanceUrl, orgUnit, topic, parentModule, isHidden = false }) {
@@ -35,19 +31,16 @@ module.exports = class TopicProcessor {
 	}
 
 	async _createTopic({ instanceUrl, orgUnit, topic, parentModule, isHidden }) {
-		const fileName = topic.fileName.replace(this._markdownRegex, '.html');
-
-		console.log(`Creating topic: '${topic.title}' with file: '${fileName}'`);
+		console.log(`Creating topic: '${topic.title}' with file: '${topic.fileName}'`);
 
 		const url = new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Identifier}/content/modules/${parentModule.Id}/structure/`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'POST');
 
-		const fileContent = await fs.promises.readFile(`${this._contentPath}/${fileName}`);
-		const fileContentMime = mime.getType(`${this._contentPath}/${fileName}`);
+		const contentInfo = await this._fileHandler.getContent(topic.fileName);
 
 		const createTopic = ContentFactory.createTopic({
 			title: topic.title,
-			url: `${orgUnit.Path}${fileName}`,
+			url: `${orgUnit.Path}${topic.fileName}`,
 			dueDate: topic.dueDate,
 			isHidden,
 			isExempt: !topic.isRequired
@@ -61,8 +54,8 @@ module.exports = class TopicProcessor {
 		);
 		formData.append(
 			'',
-			fileContent,
-			{ contentType: fileContentMime, filename: `${fileName}` }
+			contentInfo.data,
+			{ contentType: contentInfo.mimeType, filename: topic.fileName }
 		);
 
 		if (this._dryRun) {
@@ -87,8 +80,6 @@ module.exports = class TopicProcessor {
 	}
 
 	async _updateTopic(instanceUrl, orgUnit, topic, lmsTopic) {
-		const fileName = topic.fileName.replace(this._markdownRegex, '.html');
-
 		console.log(`Updating topic: '${topic.title}'`);
 
 		const url = new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Identifier}/content/topics/${lmsTopic.Id}`, instanceUrl);
@@ -99,7 +90,7 @@ module.exports = class TopicProcessor {
 			...{
 				Title: topic.title,
 				ShortTitle: topic.title,
-				Url: `${orgUnit.Path}${fileName}`,
+				Url: `${orgUnit.Path}${topic.fileName}`,
 				DueDate: topic.dueDate || null,
 				ResetCompletionTracking: true,
 				IsExempt: !topic.isRequired
@@ -122,19 +113,18 @@ module.exports = class TopicProcessor {
 			}
 		}
 
-		console.log(`Updating topic file: '${fileName}'`);
+		console.log(`Updating topic file: '${topic.fileName}'`);
 
 		const fileUrl = new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Identifier}/content/topics/${lmsTopic.Id}/file`, instanceUrl);
 		const signedFileUrl = this._valence.createAuthenticatedUrl(fileUrl, 'PUT');
 
-		const fileContent = await fs.promises.readFile(`${this._contentPath}/${fileName}`);
-		const fileContentMime = mime.getType(`${this._contentPath}/${fileName}`);
+		const contentInfo = await this._fileHandler.getContent(topic.fileName);
 
 		const formData = new FormData();
 		formData.append(
 			'file',
-			fileContent,
-			{ contentType: fileContentMime, filename: `${fileName}` }
+			contentInfo.data,
+			{ contentType: contentInfo.mimeType, filename: topic.fileName }
 		);
 
 		if (!this._dryRun) {

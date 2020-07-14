@@ -59,7 +59,7 @@ Sample manifest.json file:
 }
 ```
 
-This action assumes that any *.md files referenced in the manifest have been rendered to *.html files in an earlier step in the workflow; see Brightspace/render-docs-action.
+NOTE: Any *.md files referenced in the manifest will be rendered to HTML before being uploaded to the course.
 
 ## Documentation
 

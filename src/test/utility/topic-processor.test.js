@@ -6,8 +6,9 @@ const FormData = require('form-data');
 const fetchMock = require('fetch-mock');
 
 const TopicProcessor = require('../../utility/topic-processor');
+const FileHandler = require('../../utility/file-handler');
 
-const ContentPath = path.join(__dirname, '..', 'content');
+const FileHandlerInst = new FileHandler(path.join(__dirname, '..', 'content'));
 
 const MockValence = {
 	createAuthenticatedUrl(url) {
@@ -92,10 +93,10 @@ test('creates topic', async t => {
 	const topic = {
 		title: 'Test Topic',
 		type: 'topic',
-		fileName: 'test-module/test-topic.md'
+		fileName: 'test-module/test-topic.html'
 	};
 
-	const processor = new TopicProcessor({ contentPath: ContentPath }, MockValence, fetch);
+	const processor = new TopicProcessor({ fileHandler: FileHandlerInst }, MockValence, fetch);
 	await processor.processTopic({ instanceUrl: url, orgUnit: OrgUnit, topic, parentModule: ParentModule, isHidden: false });
 
 	t.true(fetch.done());
@@ -158,7 +159,7 @@ test('creates hidden topic', async t => {
 		fileName: 'test-module/resource.txt'
 	};
 
-	const processor = new TopicProcessor({ contentPath: ContentPath }, MockValence, fetch);
+	const processor = new TopicProcessor({ fileHandler: FileHandlerInst }, MockValence, fetch);
 	await processor.processTopic({ instanceUrl: url, orgUnit: OrgUnit, topic, parentModule: ParentModule, isHidden: true });
 
 	t.true(fetch.done());
@@ -241,10 +242,10 @@ test('updates topic', async t => {
 	const topic = {
 		title: 'Test Topic',
 		type: 'topic',
-		fileName: 'test-module/test-topic.md'
+		fileName: 'test-module/test-topic.html'
 	};
 
-	const processor = new TopicProcessor({ contentPath: ContentPath }, MockValence, fetch);
+	const processor = new TopicProcessor({ fileHandler: FileHandlerInst }, MockValence, fetch);
 	await processor.processTopic({ instanceUrl: url, orgUnit: OrgUnit, topic, parentModule: ParentModule, isHidden: false });
 
 	t.true(fetch.done());
@@ -347,7 +348,7 @@ test('updates hidden topic', async t => {
 		fileName: 'test-module/resource.txt'
 	};
 
-	const processor = new TopicProcessor({ contentPath: ContentPath }, MockValence, fetch);
+	const processor = new TopicProcessor({ fileHandler: FileHandlerInst }, MockValence, fetch);
 	await processor.processTopic({ instanceUrl: url, orgUnit: OrgUnit, topic, parentModule: ParentModule, isHidden: false });
 
 	t.true(fetch.done());

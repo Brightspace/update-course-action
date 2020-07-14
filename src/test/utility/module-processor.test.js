@@ -7,7 +7,8 @@ const test = require('ava');
 const { DryRunFakeModule } = require('../../constants');
 const ModuleProcessor = require('../../utility/module-processor');
 
-const ContentPath = path.join(__dirname, '..', 'content');
+const FileHandler = require('../../utility/file-handler');
+const FileHandlerInst = new FileHandler(path.join(__dirname, '..', 'content'));
 
 const MockValence = {
 	createAuthenticatedUrl(url) {
@@ -24,13 +25,13 @@ const OrgUnit = {
 const TestModule = {
 	title: 'Test Module',
 	type: 'module',
-	descriptionFileName: 'test-module/index.md',
+	descriptionFileName: 'test-module/index.html',
 	dueDate: '2020-01-01T00:00:00.000Z',
 	children: [
 		{
 			title: 'Test Topic',
 			type: 'topic',
-			fileName: 'test-module/test-topic.md',
+			fileName: 'test-module/test-topic.html',
 			isRequired: true
 		},
 		{
@@ -101,7 +102,7 @@ test('creates module', async t => {
 				t.deepEqual(topic, {
 					title: 'Test Topic',
 					type: 'topic',
-					fileName: 'test-module/test-topic.md',
+					fileName: 'test-module/test-topic.html',
 					isRequired: true
 				});
 				t.is(isHidden, false);
@@ -156,7 +157,7 @@ test('creates module', async t => {
 		}
 	}
 
-	const processor = new ModuleProcessor({ contentPath: ContentPath }, MockValence, fetch, MockTopicProcessor, MockQuizProcessor);
+	const processor = new ModuleProcessor({ fileHandler: FileHandlerInst }, MockValence, fetch, MockTopicProcessor, MockQuizProcessor);
 
 	await processor.processModule(url, OrgUnit, TestModule);
 
@@ -223,7 +224,7 @@ test('updates module', async t => {
 				t.deepEqual(topic, {
 					title: 'Test Topic',
 					type: 'topic',
-					fileName: 'test-module/test-topic.md',
+					fileName: 'test-module/test-topic.html',
 					isRequired: true
 				});
 				t.is(isHidden, false);
@@ -278,7 +279,7 @@ test('updates module', async t => {
 		}
 	}
 
-	const processor = new ModuleProcessor({ contentPath: ContentPath }, MockValence, fetch, MockTopicProcessor, MockQuizProcessor);
+	const processor = new ModuleProcessor({ fileHandler: FileHandlerInst }, MockValence, fetch, MockTopicProcessor, MockQuizProcessor);
 
 	await processor.processModule(url, OrgUnit, TestModule);
 
@@ -355,7 +356,7 @@ test('creates submodule', async t => {
 				t.deepEqual(topic, {
 					title: 'Test Topic',
 					type: 'topic',
-					fileName: 'test-module/test-topic.md',
+					fileName: 'test-module/test-topic.html',
 					isRequired: true
 				});
 				t.is(isHidden, false);
@@ -410,7 +411,7 @@ test('creates submodule', async t => {
 		}
 	}
 
-	const processor = new ModuleProcessor({ contentPath: ContentPath }, MockValence, fetch, MockTopicProcessor, MockQuizProcessor);
+	const processor = new ModuleProcessor({ fileHandler: FileHandlerInst }, MockValence, fetch, MockTopicProcessor, MockQuizProcessor);
 
 	await processor.processModule(url, OrgUnit, TestModule, {
 		Id: 1,
@@ -514,7 +515,7 @@ test('updates submodule', async t => {
 				t.deepEqual(topic, {
 					title: 'Test Topic',
 					type: 'topic',
-					fileName: 'test-module/test-topic.md',
+					fileName: 'test-module/test-topic.html',
 					isRequired: true
 				});
 				t.is(isHidden, false);
@@ -569,7 +570,7 @@ test('updates submodule', async t => {
 		}
 	}
 
-	const processor = new ModuleProcessor({ contentPath: ContentPath }, MockValence, fetch, MockTopicProcessor, MockQuizProcessor);
+	const processor = new ModuleProcessor({ fileHandler: FileHandlerInst }, MockValence, fetch, MockTopicProcessor, MockQuizProcessor);
 
 	await processor.processModule(url, OrgUnit, TestModule, {
 		Id: 1,
@@ -602,7 +603,7 @@ test('creates submodule, dryrun parentModule does not exist', async t => {
 				t.deepEqual(topic, {
 					title: 'Test Topic',
 					type: 'topic',
-					fileName: 'test-module/test-topic.md',
+					fileName: 'test-module/test-topic.html',
 					isRequired: true
 				});
 				t.is(isHidden, false);
@@ -631,7 +632,7 @@ test('creates submodule, dryrun parentModule does not exist', async t => {
 		}
 	}
 
-	const processor = new ModuleProcessor({ contentPath: ContentPath, isDryRun: true }, MockValence, fetch, MockTopicProcessor, MockQuizProcessor);
+	const processor = new ModuleProcessor({ fileHandler: FileHandlerInst, isDryRun: true }, MockValence, fetch, MockTopicProcessor, MockQuizProcessor);
 
 	await processor.processModule(url, OrgUnit, TestModule, DryRunFakeModule);
 

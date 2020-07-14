@@ -13,17 +13,15 @@ module.exports = class UploadCourseContent {
 		},
 		valence,
 		fetch = require('node-fetch'),
-		ModuleProcessor = require('./utility/module-processor')
+		ModuleProcessor = require('./utility/module-processor'),
+		FileHandler = require('./utility/file-handler')
 	) {
 		this._fetch = fetch;
 		this._valence = valence;
-		this._contentDir = contentDirectory;
 		this._manifestPath = manifestPath;
-		this._dryRun = isDryRun;
+		const fileHandler = new FileHandler(contentDirectory);
 
-		this._markdownRegex = /.md$/i;
-
-		this._moduleProcessor = new ModuleProcessor({ contentPath: contentDirectory, isDryRun }, valence);
+		this._moduleProcessor = new ModuleProcessor({ fileHandler, isDryRun }, valence);
 	}
 
 	/**

@@ -1,27 +1,23 @@
 'use strict';
 
-const fs = require('fs');
-
 const ContentFactory = require('./content-factory');
 const { DryRunFakeModule, LEVersion } = require('../constants');
 
 module.exports = class ModuleProcessor {
 	constructor(
-		{ contentPath, isDryRun = false },
+		{ fileHandler, isDryRun = false },
 		valence,
 		fetch = require('node-fetch'),
 		TopicProcessor = require('./topic-processor'),
 		QuizProcessor = require('./quiz-processor')
 	) {
-		this._contentPath = contentPath;
+		this._fileHandler = fileHandler;
 		this._dryRun = isDryRun;
 
 		this._fetch = fetch;
 		this._valence = valence;
-		this._topicProcessor = new TopicProcessor({ contentPath, isDryRun }, valence);
+		this._topicProcessor = new TopicProcessor({ fileHandler, isDryRun }, valence);
 		this._quizProcessor = new QuizProcessor({ isDryRun }, valence);
-
-		this._markdownRegex = /.md$/i;
 	}
 
 	async processModule(instanceUrl, orgUnit, module, parentModule = null) {
@@ -69,11 +65,11 @@ module.exports = class ModuleProcessor {
 			: new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Identifier}/content/root/`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'POST');
 
-		const description = await this._getDescription(module);
+		const description = await this._fileHandler.getContent(module.descriptionFileName);
 
 		const createModule = ContentFactory.createModule({
 			title: module.title,
-			description,
+			description: ContentFactory.createRichText(description.data.toString('utf-8'), 'Html'),
 			dueDate: module.dueDate
 		});
 
@@ -104,7 +100,7 @@ module.exports = class ModuleProcessor {
 		const url = new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Identifier}/content/modules/${lmsModule.Id}`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'PUT');
 
-		const description = await this._getDescription(module);
+		const description = await this._fileHandler.getContent(module.descriptionFileName);
 
 		const body = {
 			...lmsModule,
@@ -113,7 +109,7 @@ module.exports = class ModuleProcessor {
 				ShortTitle: module.title,
 				ModuleDueDate: module.dueDate || null,
 				IsHidden: isHidden,
-				Description: description
+				Description: ContentFactory.createRichText(description.data.toString('utf-8'), 'Html')
 			}
 		};
 
@@ -147,17 +143,6 @@ module.exports = class ModuleProcessor {
 		};
 
 		return this._topicProcessor.processTopic({ instanceUrl, orgUnit, topic, parentModule, isHidden: true });
-	}
-
-	async _getDescription(module) {
-		if (!module.descriptionFileName) {
-			return null;
-		}
-
-		const descriptionFileName = module.descriptionFileName.replace(this._markdownRegex, '.html');
-		const descriptionHtml = await fs.promises.readFile(`${this._contentPath}/${descriptionFileName}`);
-
-		return ContentFactory.createRichText(descriptionHtml.toString('utf-8'), 'Html');
 	}
 
 	async _getContent(instanceUrl, orgUnit, parentModule = null) {

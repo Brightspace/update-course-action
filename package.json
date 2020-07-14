@@ -10,6 +10,7 @@
     "@actions/core": "^1.2.4",
     "@actions/github": "^3.0.0",
     "form-data": "^3.0.0",
+    "marked": "^1.1.0",
     "mime": "^2.4.6",
     "node-fetch": "^2.6.0",
     "validator": "^13.1.1"
@@ -18,6 +19,7 @@
     "@zeit/ncc": "^0.22.3",
     "ava": "^3.9.0",
     "fetch-mock": "^9.10.1",
+    "mock-fs": "^4.12.0",
     "xo": "^0.32.0"
   },
   "description": "Updates the course content of a Brightspace course",
