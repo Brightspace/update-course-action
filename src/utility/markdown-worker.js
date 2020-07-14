@@ -24,6 +24,7 @@ if (isMainThread) {
 		});
 	};
 } else {
+	console.log('worker working');
 	const renderedHtml = marked(workerData);
 	parentPort.postMessage(renderedHtml);
 }
