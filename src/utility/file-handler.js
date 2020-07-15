@@ -1,5 +1,7 @@
 'use strict';
 
+// eslint-disable-next-line import/no-unassigned-import
+require('marked');
 const mime = require('mime');
 const fs = require('fs');
 const {	Worker } = require('worker_threads');
