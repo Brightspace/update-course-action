@@ -4,6 +4,10 @@
     "operator-linebreak": [
       "error",
       "before"
+    ],
+    "yield-star-spacing": [
+      "error",
+      "after"
     ]
   },
   "overrides": [
