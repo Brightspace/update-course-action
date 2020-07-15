@@ -1,10 +1,20 @@
 'use strict';
 
-const path = require('path');
 const mime = require('mime');
 const fs = require('fs');
 const {	Worker } = require('worker_threads');
-const markdownWorkerFile = path.join(__dirname, 'markdown-worker.js');
+
+const markdownWorkerCode = `
+'use strict';
+
+const {
+	parentPort, workerData
+} = require('worker_threads');
+const marked = require('marked');
+
+const renderedHtml = marked(workerData);
+parentPort.postMessage(renderedHtml);
+`;
 
 module.exports = class FileHandler {
 	constructor(
@@ -18,7 +28,8 @@ module.exports = class FileHandler {
 
 	async _renderMarkdown(toRender) {
 		return new Promise((resolve, reject) => {
-			const worker = new Worker(markdownWorkerFile, {
+			const worker = new Worker(markdownWorkerCode, {
+				eval: true,
 				workerData: toRender.toString('utf-8')
 			});
 			worker.on('message', html => {

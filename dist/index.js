@@ -6037,11 +6037,21 @@ module.exports.default = exports.default;
 "use strict";
 
 
-const path = __webpack_require__(622);
 const mime = __webpack_require__(444);
 const fs = __webpack_require__(747);
 const {	Worker } = __webpack_require__(13);
-const markdownWorkerFile = __webpack_require__.ab + "markdown-worker.js";
+
+const markdownWorkerCode = `
+'use strict';
+
+const {
+	parentPort, workerData
+} = require('worker_threads');
+const marked = require('marked');
+
+const renderedHtml = marked(workerData);
+parentPort.postMessage(renderedHtml);
+`;
 
 module.exports = class FileHandler {
 	constructor(
@@ -6055,7 +6065,8 @@ module.exports = class FileHandler {
 
 	async _renderMarkdown(toRender) {
 		return new Promise((resolve, reject) => {
-			const worker = new Worker(__webpack_require__.ab + "markdown-worker.js", {
+			const worker = new Worker(markdownWorkerCode, {
+				eval: true,
 				workerData: toRender.toString('utf-8')
 			});
 			worker.on('message', html => {
