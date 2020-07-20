@@ -3,6 +3,7 @@
 const FormData = require('form-data');
 const { DryRunId, LEVersion, LPVersion } = require('../constants');
 const ContentFactory = require('../utility/content-factory');
+const mime = require('mime');
 
 module.exports = class ValenceApi {
 	constructor(
@@ -56,7 +57,7 @@ module.exports = class ValenceApi {
 			return this._createModule(instanceUrl, orgUnit, module, parentModule);
 		}
 
-		return this._updateModule(instanceUrl, orgUnit, self, module);
+		return this._updateModule(instanceUrl, orgUnit, { module, self }, parentModule);
 	}
 
 	async _createModule(instanceUrl, orgUnit, module, parentModule = null) {
@@ -75,10 +76,7 @@ module.exports = class ValenceApi {
 		});
 
 		if (this._isDryRun) {
-			return {
-				...module,
-				id: DryRunId
-			};
+			return this._convertModule(module, DryRunId, parentModule);
 		}
 
 		const response = await this._fetch(
@@ -95,10 +93,10 @@ module.exports = class ValenceApi {
 
 		const json = await response.json();
 
-		return this._convertModule(module, json.Id);
+		return this._convertModule(module, json.Id, parentModule);
 	}
 
-	async _updateModule(instanceUrl, orgUnit, self, module) {
+	async _updateModule(instanceUrl, orgUnit, { module, self }, parentModule = null) {
 		const url = new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Identifier}/content/modules/${self.Id}`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'PUT');
 
@@ -121,12 +119,8 @@ module.exports = class ValenceApi {
 			isDirty = true;
 		}
 
-		if (!isDirty) {
-			return this._convertModule(module, self.Id);
-		}
-
-		if (this._isDryRun) {
-			return this._convertModule(module, self.Id);
+		if (!isDirty || this._isDryRun) {
+			return this._convertModule(module, self.Id, parentModule);
 		}
 
 		const response = await this._fetch(
@@ -141,7 +135,7 @@ module.exports = class ValenceApi {
 
 		this._assertResponse(response);
 
-		return this._convertModule(module, self.Id);
+		return this._convertModule(module, self.Id, parentModule);
 	}
 
 	async assertTopic(instanceUrl, orgUnit, { module, topic, data }) {
@@ -152,8 +146,8 @@ module.exports = class ValenceApi {
 			return this._createTopic(instanceUrl, orgUnit, { module, topic, data });
 		}
 
-		await this._updateTopic(instanceUrl, orgUnit, self, topic);
-		return this._updateTopicFile(instanceUrl, orgUnit, { self, topic, data });
+		await this._updateTopic(instanceUrl, orgUnit, { module, topic, self });
+		return this._updateTopicFile(instanceUrl, orgUnit, { module, topic, data, self });
 	}
 
 	async _createTopic(instanceUrl, orgUnit, { module, topic, data }) {
@@ -180,14 +174,11 @@ module.exports = class ValenceApi {
 		formData.append(
 			'',
 			data,
-			{ filename: fileName }
+			{ contentType: mime.getType(fileName), filename: fileName }
 		);
 
 		if (this._isDryRun) {
-			return {
-				...topic,
-				id: DryRunId
-			};
+			return this._convertTopic(topic, DryRunId, module);
 		}
 
 		const response = await this._fetch(
@@ -197,17 +188,17 @@ module.exports = class ValenceApi {
 				headers: {
 					'Content-Type': `multipart/mixed; boundary=${formData.getBoundary()}`
 				},
-				body: formData.getBuffer().toString('utf-8')
+				body: formData
 			});
 
 		this._assertResponse(response);
 
 		const json = await response.json();
 
-		return this._convertTopic(topic, json.Id);
+		return this._convertTopic(topic, json.Id, module);
 	}
 
-	async _updateTopic(instanceUrl, orgUnit, self, topic) {
+	async _updateTopic(instanceUrl, orgUnit, { module, topic, self }) {
 		const url = new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Identifier}/content/topics/${self.Id}`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'PUT');
 
@@ -230,14 +221,10 @@ module.exports = class ValenceApi {
 			isDirty = true;
 		}
 
-		if (!isDirty) {
-			return this._convertTopic(topic, self.Id);
-		}
-
 		self.ResetCompletionTracking = true;
 
-		if (this._isDryRun) {
-			return this._convertTopic(topic, self.Id);
+		if (!isDirty || this._isDryRun) {
+			return this._convertTopic(topic, self.Id, module);
 		}
 
 		const response = await this._fetch(
@@ -252,10 +239,10 @@ module.exports = class ValenceApi {
 
 		this._assertResponse(response);
 
-		return this._convertTopic(topic, self.Id);
+		return this._convertTopic(topic, self.Id, module);
 	}
 
-	async _updateTopicFile(instanceUrl, orgUnit, { self, topic, data }) {
+	async _updateTopicFile(instanceUrl, orgUnit, { module, topic, data, self }) {
 		const url = new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Identifier}/content/topics/${self.Id}/file`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'PUT');
 
@@ -266,11 +253,11 @@ module.exports = class ValenceApi {
 		formData.append(
 			'file',
 			data,
-			{ filename: `${fileName}` }
+			{ contentType: mime.getType(fileName), filename: `${fileName}` }
 		);
 
 		if (this._isDryRun) {
-			return this._convertTopic(topic, self.Id);
+			return this._convertTopic(topic, self.Id, module);
 		}
 
 		const response = await this._fetch(
@@ -285,7 +272,7 @@ module.exports = class ValenceApi {
 
 		this._assertResponse(response);
 
-		return this._convertTopic(topic, self.Id);
+		return this._convertTopic(topic, self.Id, module);
 	}
 
 	async assertQuiz(instanceUrl, orgUnit, quiz, module) {
@@ -318,10 +305,7 @@ module.exports = class ValenceApi {
 		});
 
 		if (this._isDryRun) {
-			return {
-				...quiz,
-				id: DryRunId
-			};
+			return this._convertTopic(quiz, DryRunId, module);
 		}
 
 		const response = await this._fetch(
@@ -339,7 +323,7 @@ module.exports = class ValenceApi {
 
 		const json = await response.json();
 
-		return this._convertTopic(quiz, json.Id);
+		return this._convertTopic(quiz, json.Id, module);
 	}
 
 	async getOrgUnit(instanceUrl, orgUnitId) {
@@ -372,21 +356,23 @@ module.exports = class ValenceApi {
 		throw new Error(response.statusText);
 	}
 
-	_convertModule(module, id) {
+	_convertModule(module, id, parent = null) {
 		return {
 			title: module.title,
 			type: module.type,
 			description: module.description,
 			descriptionFileName: module.descriptionFileName,
 			dueDate: module.dueDate,
-			id
+			id,
+			parent
 		};
 	}
 
-	_convertTopic(topic, id) {
+	_convertTopic(topic, id, module) {
 		return {
 			...topic,
-			id
+			id,
+			parent: module
 		};
 	}
 };

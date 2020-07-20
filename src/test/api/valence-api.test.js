@@ -2,6 +2,7 @@
 
 const test = require('ava');
 const fetchMock = require('fetch-mock');
+const FormData = require('form-data');
 
 const ValenceApi = require('../../api/valence-api');
 
@@ -109,13 +110,13 @@ test('assertModule calls _updateModule', async t => {
 	fetch.get({ url: 'https://example.com/d2l/api/le/1.44/123/content/root/' }, response);
 
 	const api = new ValenceApi(ValenceMock, false, fetch);
-	api._updateModule = (url, ou, s, m) => {
+	api._updateModule = (url, ou, { module, self }) => {
 		t.is(url, 'https://example.com/');
 		t.deepEqual(ou, OrgUnit);
-		t.deepEqual(s, response.body[0]);
-		t.deepEqual(m, TestModule);
+		t.deepEqual(self, response.body[0]);
+		t.deepEqual(module, TestModule);
 
-		return m;
+		return module;
 	};
 
 	const result = await api.assertModule('https://example.com/', OrgUnit, TestModule);
@@ -142,6 +143,7 @@ test('_createModule returns created module', async t => {
 
 	t.deepEqual(result, {
 		id: 1,
+		parent: null,
 		...module
 	});
 });
@@ -163,6 +165,7 @@ test('_createModule returns created module (dry-run)', async t => {
 
 	t.deepEqual(result, {
 		id: 0,
+		parent: null,
 		...module
 	});
 });
@@ -186,6 +189,7 @@ test('_createModule returns created submodule', async t => {
 
 	t.deepEqual(result, {
 		id: 2,
+		parent: TestModule,
 		...module
 	});
 });
@@ -207,6 +211,7 @@ test('_createModule returns created submodule (dry-run)', async t => {
 
 	t.deepEqual(result, {
 		id: 0,
+		parent: TestModule,
 		...module
 	});
 });
@@ -243,7 +248,8 @@ test('_updateModule returns updated module', async t => {
 		type: 'module',
 		dueDate: '2020-01-01T00:00:00.000Z',
 		descriptionFileName: 'test-topic/index.md',
-		description: '<html>Update!</html>'
+		description: '<html>Update!</html>',
+		parent: null
 	};
 
 	const fetch = fetchMock.sandbox();
@@ -251,7 +257,7 @@ test('_updateModule returns updated module', async t => {
 
 	const api = new ValenceApi(ValenceMock, false, fetch);
 
-	const result = await api._updateModule('https://example.com/', OrgUnit, self, module);
+	const result = await api._updateModule('https://example.com/', OrgUnit, { module, self });
 
 	t.deepEqual(result, module);
 });
@@ -279,14 +285,15 @@ test('_updateModule returns updated module (dry-run)', async t => {
 		type: 'module',
 		dueDate: '2020-01-01T00:00:00.000Z',
 		descriptionFileName: 'test-topic/index.md',
-		description: '<html>Update!</html>'
+		description: '<html>Update!</html>',
+		parent: null
 	};
 
 	const fetch = fetchMock.sandbox();
 
 	const api = new ValenceApi(ValenceMock, true, fetch);
 
-	const result = await api._updateModule('https://example.com/', OrgUnit, self, module);
+	const result = await api._updateModule('https://example.com/', OrgUnit, { module, self });
 
 	t.deepEqual(result, module);
 });
@@ -340,20 +347,22 @@ test('assertTopic calls _updateTopic', async t => {
 	fetch.get({ url: 'https://example.com/d2l/api/le/1.44/123/content/modules/1/structure/' }, response);
 
 	const api = new ValenceApi(ValenceMock, false, fetch);
-	api._updateTopic = (url, ou, self, topic) => {
+	api._updateTopic = (url, ou, { module, self, topic }) => {
 		t.is(url, 'https://example.com/');
 		t.deepEqual(ou, OrgUnit);
 		t.deepEqual(self, response.body[0]);
 		t.deepEqual(topic, testTopic);
+		t.deepEqual(module, TestModule);
 
 		return topic;
 	};
 
-	api._updateTopicFile = (url, ou, { self, topic, data }) => {
+	api._updateTopicFile = (url, ou, { module, self, topic, data }) => {
 		t.is(url, 'https://example.com/');
 		t.deepEqual(ou, OrgUnit);
 		t.deepEqual(self, response.body[0]);
 		t.deepEqual(topic, testTopic);
+		t.deepEqual(module, TestModule);
 		t.is(data, testData);
 
 		return topic;
@@ -389,7 +398,10 @@ test('_createTopic returns created topic', async t => {
 
 		const boundary = options.headers['Content-Type'].match(/boundary=(?<boundary>.*?)$/).groups.boundary;
 
-		return options.body === `--${boundary}\r\nContent-Disposition: form-data; name=""\r\nContent-Type: application/json\r\n\r\n`
+		const formData = new FormData(options.body);
+		const body = formData.getBuffer().toString('utf-8');
+
+		return body === `--${boundary}\r\nContent-Disposition: form-data; name=""\r\nContent-Type: application/json\r\n\r\n`
 			+ '{"Title":"Test Topic","ShortTitle":"Test Topic","Type":1,"TopicType":1,"StartDate":null,"EndDate":null,"DueDate":null,"Url":"/content/course123/test-module/test-topic.html","IsHidden":false,"IsLocked":false,"IsExempt":false}\r\n'
 			+ `--${boundary}\r\nContent-Disposition: form-data; name=""; filename="test-topic.html"\r\nContent-Type: text/html\r\n\r\n<h1></h1>\r\n`
 			+ `--${boundary}--\r\n`;
@@ -401,6 +413,7 @@ test('_createTopic returns created topic', async t => {
 
 	t.deepEqual(result, {
 		id: 2,
+		parent: TestModule,
 		...topic
 	});
 });
@@ -439,6 +452,7 @@ test('_createTopic returns created topic (dry-run)', async t => {
 
 	t.deepEqual(result, {
 		id: 0,
+		parent: TestModule,
 		...topic
 	});
 });
@@ -490,13 +504,14 @@ test('_updateTopic returns updated topic', async t => {
 
 	const api = new ValenceApi(ValenceMock, false, fetch);
 
-	const result = await api._updateTopic('https://example.com/', OrgUnit, self, topic);
+	const result = await api._updateTopic('https://example.com/', OrgUnit, { module: TestModule, self, topic });
 
 	t.deepEqual(result, {
 		id: 2,
 		title: 'Test Topic',
 		type: 'topic',
-		fileName: 'test-module/test-topic.md'
+		fileName: 'test-module/test-topic.md',
+		parent: TestModule
 	});
 });
 
@@ -528,13 +543,14 @@ test('_updateTopic returns updated topic (dry-run)', async t => {
 
 	const api = new ValenceApi(ValenceMock, true, fetch);
 
-	const result = await api._updateTopic('https://example.com/', OrgUnit, self, topic);
+	const result = await api._updateTopic('https://example.com/', OrgUnit, { module: TestModule, self, topic });
 
 	t.deepEqual(result, {
 		id: 2,
 		title: 'Test Topic',
 		type: 'topic',
-		fileName: 'test-module/test-topic.md'
+		fileName: 'test-module/test-topic.md',
+		parent: TestModule
 	});
 });
 
@@ -597,6 +613,7 @@ test('_createQuizTopic returns created quiz', async t => {
 
 	t.deepEqual(result, {
 		id: 3,
+		parent: TestModule,
 		...testQuiz
 	});
 });

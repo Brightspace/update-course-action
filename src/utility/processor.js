@@ -49,26 +49,25 @@ module.exports = class Processor {
 		return results;
 	}
 
-	async _processResource(instanceUrl, orgUnit, resource, module) {
+	async _processResource(instanceUrl, orgUnit, resource, parentModule) {
 		const topic = {
 			...resource,
 			title: resource.fileName
 		};
 
-		return this._processTopic(instanceUrl, orgUnit, topic, module);
+		return this._processTopic(instanceUrl, orgUnit, topic, parentModule);
 	}
 
-	async _processTopic(instanceUrl, orgUnit, topic, module) {
+	async _processTopic(instanceUrl, orgUnit, topic, parentModule) {
 		const fileName = topic.fileName.replace(/.md$/, '.html');
 
-		const buffer = await fs.promises.readFile(`${this._contentPath}/${fileName}`);
-		const data = buffer.toString('utf-8');
+		const data = await fs.promises.readFile(`${this._contentPath}/${fileName}`);
 
-		return this._valence.assertTopic(instanceUrl, orgUnit, { module, topic, data });
+		return this._valence.assertTopic(instanceUrl, orgUnit, { module: parentModule, topic, data });
 	}
 
-	async _processQuiz(instanceUrl, orgUnit, quiz, module) {
-		return this._valence.assertQuiz(instanceUrl, orgUnit, quiz, module);
+	async _processQuiz(instanceUrl, orgUnit, quiz, parentModule) {
+		return this._valence.assertQuiz(instanceUrl, orgUnit, quiz, parentModule);
 	}
 
 	async _getDescription(module) {
@@ -77,6 +76,7 @@ module.exports = class Processor {
 		}
 
 		const descriptionFileName = module.descriptionFileName.replace(/.md$/, '.html');
+
 		const buffer = await fs.promises.readFile(`${this._contentPath}/${descriptionFileName}`);
 		return buffer.toString('utf-8');
 	}
