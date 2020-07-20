@@ -1,17 +1,14 @@
 'use strict';
 
-const path = require('path');
 const parser = require('parse5');
 
 module.exports = class LinkRewriter {
 	constructor(
-		contentPath,
-		valence,
-		fs = require('fs')
+		fileHandler,
+		valence
 	) {
-		this._contentPath = contentPath;
+		this._fileHandler = fileHandler;
 		this._valence = valence;
-		this._fs = fs;
 	}
 
 	async rewriteLinks(instanceUrl, orgUnitId, uploadedManifest) {
@@ -41,7 +38,7 @@ module.exports = class LinkRewriter {
 
 			console.log(`Found relative link: '${href.value}' in '${item.descriptionFileName || item.fileName}`);
 
-			const targetFileName = href.value.replace('../', '').replace(/.html$/, '.md');
+			const targetFileName = href.value.replace('../', '');
 			const target = manifest.find(x => x.descriptionFileName === targetFileName || x.fileName === targetFileName);
 			if (!target) {
 				throw new Error('Could not find matching content item');
@@ -78,19 +75,9 @@ module.exports = class LinkRewriter {
 	}
 
 	async _getFileContents(item) {
-		const filePath = path.join(this._contentPath, this._getFileName(item));
-		const buffer = await this._fs.promises.readFile(filePath);
-		return buffer.toString('utf-8');
-	}
-
-	async _writeFileContents(item, data) {
-		const filePath = path.join(this._contentPath, this._getFileName(item));
-		return this._fs.promises.writeFile(filePath, data);
-	}
-
-	_getFileName(item) {
 		const fileName = item.descriptionFileName || item.fileName;
-		return fileName.replace(/.md$/, '.html');
+		const content = await this._fileHandler.getContent(fileName);
+		return content.toString('utf-8');
 	}
 
 	* _getAllLinks(node) {

@@ -5904,19 +5904,17 @@ module.exports.default = exports.default;
 /***/ }),
 
 /***/ 385:
-/***/ (function(module, __unusedexports, __webpack_require__) {
+/***/ (function(module) {
 
 "use strict";
 
 
-const fs = __webpack_require__(747);
-
 module.exports = class Processor {
 	constructor(
-		{ contentPath },
+		fileHandler,
 		valence
 	) {
-		this._contentPath = contentPath;
+		this._fileHandler = fileHandler;
 		this._valence = valence;
 	}
 
@@ -5968,10 +5966,8 @@ module.exports = class Processor {
 	}
 
 	async _processTopic(instanceUrl, orgUnit, topic, parentModule) {
-		const fileName = topic.fileName.replace(/.md$/, '.html');
-
-		const buffer = await fs.promises.readFile(`${this._contentPath}/${fileName}`);
-		const data = buffer.toString('utf-8');
+		const content = await this._fileHandler.getContent(topic.fileName);
+		const data = content.toString('utf-8');
 
 		return this._valence.assertTopic(instanceUrl, orgUnit, { module: parentModule, topic, data });
 	}
@@ -5985,9 +5981,8 @@ module.exports = class Processor {
 			return null;
 		}
 
-		const descriptionFileName = module.descriptionFileName.replace(/.md$/, '.html');
-		const buffer = await fs.promises.readFile(`${this._contentPath}/${descriptionFileName}`);
-		return buffer.toString('utf-8');
+		const content = await this._fileHandler.getContent(module.descriptionFileName);
+		return content.toString('utf-8');
 	}
 };
 
@@ -9820,20 +9815,15 @@ const fs = __webpack_require__(747);
 
 module.exports = class UploadCourseContent {
 	constructor(
-		{
-			contentDirectory,
-			manifestPath
-		},
+		manifestPath,
+		fileHandler,
 		valence,
 		Processor = __webpack_require__(385)
 	) {
 		this._valence = valence;
-		this._contentDir = contentDirectory;
+		this._fileHandler = fileHandler;
 		this._manifestPath = manifestPath;
-
-		this._markdownRegex = /.md$/i;
-
-		this._processor = new Processor({ contentPath: contentDirectory }, valence);
+		this._processor = new Processor(fileHandler, valence);
 	}
 
 	/**
@@ -11197,18 +11187,15 @@ exports.isIntegrationPoint = function(tn, ns, attrs, foreignNS) {
 "use strict";
 
 
-const path = __webpack_require__(622);
 const parser = __webpack_require__(76);
 
 module.exports = class LinkRewriter {
 	constructor(
-		contentPath,
-		valence,
-		fs = __webpack_require__(747)
+		fileHandler,
+		valence
 	) {
-		this._contentPath = contentPath;
+		this._fileHandler = fileHandler;
 		this._valence = valence;
-		this._fs = fs;
 	}
 
 	async rewriteLinks(instanceUrl, orgUnitId, uploadedManifest) {
@@ -11238,7 +11225,7 @@ module.exports = class LinkRewriter {
 
 			console.log(`Found relative link: '${href.value}' in '${item.descriptionFileName || item.fileName}`);
 
-			const targetFileName = href.value.replace('../', '').replace(/.html$/, '.md');
+			const targetFileName = href.value.replace('../', '');
 			const target = manifest.find(x => x.descriptionFileName === targetFileName || x.fileName === targetFileName);
 			if (!target) {
 				throw new Error('Could not find matching content item');
@@ -11275,19 +11262,9 @@ module.exports = class LinkRewriter {
 	}
 
 	async _getFileContents(item) {
-		const filePath = path.join(this._contentPath, this._getFileName(item));
-		const buffer = await this._fs.promises.readFile(filePath);
-		return buffer.toString('utf-8');
-	}
-
-	async _writeFileContents(item, data) {
-		const filePath = path.join(this._contentPath, this._getFileName(item));
-		return this._fs.promises.writeFile(filePath, data);
-	}
-
-	_getFileName(item) {
 		const fileName = item.descriptionFileName || item.fileName;
-		return fileName.replace(/.md$/, '.html');
+		const content = await this._fileHandler.getContent(fileName);
+		return content.toString('utf-8');
 	}
 
 	* _getAllLinks(node) {
