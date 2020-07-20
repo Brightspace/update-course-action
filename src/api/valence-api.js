@@ -3,6 +3,7 @@
 const FormData = require('form-data');
 const { DryRunId, LEVersion, LPVersion } = require('../constants');
 const ContentFactory = require('../utility/content-factory');
+const mime = require('mime');
 
 module.exports = class ValenceApi {
 	constructor(
@@ -173,7 +174,7 @@ module.exports = class ValenceApi {
 		formData.append(
 			'',
 			data,
-			{ filename: fileName }
+			{ contentType: mime.getType(fileName), filename: fileName }
 		);
 
 		if (this._isDryRun) {
@@ -187,7 +188,7 @@ module.exports = class ValenceApi {
 				headers: {
 					'Content-Type': `multipart/mixed; boundary=${formData.getBoundary()}`
 				},
-				body: formData.getBuffer().toString('utf-8')
+				body: formData
 			});
 
 		this._assertResponse(response);
@@ -252,7 +253,7 @@ module.exports = class ValenceApi {
 		formData.append(
 			'file',
 			data,
-			{ filename: `${fileName}` }
+			{ contentType: mime.getType(fileName), filename: `${fileName}` }
 		);
 
 		if (this._isDryRun) {

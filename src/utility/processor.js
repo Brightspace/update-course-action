@@ -61,8 +61,7 @@ module.exports = class Processor {
 	async _processTopic(instanceUrl, orgUnit, topic, parentModule) {
 		const fileName = topic.fileName.replace(/.md$/, '.html');
 
-		const buffer = await fs.promises.readFile(`${this._contentPath}/${fileName}`);
-		const data = buffer.toString('utf-8');
+		const data = await fs.promises.readFile(`${this._contentPath}/${fileName}`);
 
 		return this._valence.assertTopic(instanceUrl, orgUnit, { module: parentModule, topic, data });
 	}
@@ -77,6 +76,7 @@ module.exports = class Processor {
 		}
 
 		const descriptionFileName = module.descriptionFileName.replace(/.md$/, '.html');
+
 		const buffer = await fs.promises.readFile(`${this._contentPath}/${descriptionFileName}`);
 		return buffer.toString('utf-8');
 	}
