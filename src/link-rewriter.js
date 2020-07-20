@@ -1,6 +1,7 @@
 'use strict';
 
 const parser = require('parse5');
+const path = require('path');
 
 module.exports = class LinkRewriter {
 	constructor(
@@ -20,7 +21,8 @@ module.exports = class LinkRewriter {
 	}
 
 	async _processItemLinks(instanceUrl, orgUnit, manifest, item) {
-		if (!item.descriptionFileName && !item.fileName) {
+		const fileName = item.descriptionFileName || item.fileName;
+		if (!fileName) {
 			return;
 		}
 
@@ -36,12 +38,14 @@ module.exports = class LinkRewriter {
 				continue;
 			}
 
-			console.log(`Found relative link: '${href.value}' in '${item.descriptionFileName || item.fileName}`);
+			let targetPath = href.value;
+			if (targetPath.startsWith('.')) {
+				targetPath = path.normalize(path.join(path.dirname(fileName), targetPath)).replace(/\\/g, '/');
+			}
 
-			const targetFileName = href.value.replace('../', '');
-			const target = manifest.find(x => x.descriptionFileName === targetFileName || x.fileName === targetFileName);
+			const target = manifest.find(x => x.descriptionFileName === targetPath || x.fileName === targetPath);
 			if (!target) {
-				throw new Error('Could not find matching content item');
+				throw new Error(`Could not find target of link in '${fileName}' to '${href.value}'. Resolved as '${targetPath}'`);
 			}
 
 			const newHref = this._getNewHref(orgUnit, item, target);
