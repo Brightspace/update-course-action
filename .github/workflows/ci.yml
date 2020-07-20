@@ -19,3 +19,7 @@ jobs:
       run: |
         npm ci
         npm test
+        npm run build
+    - name: Check dist
+      run: |
+        git diff --exit-code > /dev/null
