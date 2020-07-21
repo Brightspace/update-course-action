@@ -6750,17 +6750,17 @@ module.exports = class Processor {
 	}
 
 	async _processResource(instanceUrl, orgUnit, resource, parentModule) {
+		const data = await this._fileHandler.getContent(resource.fileName);
 		const topic = {
 			...resource,
 			title: resource.fileName
 		};
-
-		return this._processTopic(instanceUrl, orgUnit, topic, parentModule);
+		return this._valence.assertTopic(instanceUrl, orgUnit, { module: parentModule, topic, data });
 	}
 
 	async _processTopic(instanceUrl, orgUnit, topic, parentModule) {
-		const content = await this._fileHandler.getContent(topic.fileName);
-		const data = content.toString('utf-8');
+		let data = await this._fileHandler.getContent(topic.fileName);
+		data = data.toString('utf-8');
 
 		return this._valence.assertTopic(instanceUrl, orgUnit, { module: parentModule, topic, data });
 	}
@@ -12283,7 +12283,7 @@ module.exports = class FileHandler {
 
 	async getContent(fileName) {
 		if (!fileName) {
-			return { data: null, mimeType: null };
+			return null;
 		}
 
 		let data = await fs.promises.readFile(`${this._contentPath}/${fileName}`);
