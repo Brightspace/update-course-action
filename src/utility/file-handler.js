@@ -20,7 +20,10 @@ module.exports = class FileHandler {
 
 		// If the file is a markdown file, render it to HTML.
 		if (fileName.match(/\.md$/)) {
-			data = Buffer.from(marked(data.toString('utf-8')));
+			console.log(`rendering ${fileName}`);
+			data = marked(data.toString('utf-8'));
+			console.log(`rendered ${fileName}: ${data.slice(0, 20)}...${data.length}...${data.slice(-20)}`);
+			data = Buffer.from(data);
 		}
 
 		return data;

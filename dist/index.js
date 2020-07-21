@@ -12290,7 +12290,10 @@ module.exports = class FileHandler {
 
 		// If the file is a markdown file, render it to HTML.
 		if (fileName.match(/\.md$/)) {
-			data = Buffer.from(marked(data.toString('utf-8')));
+			console.log(`rendering ${fileName}`);
+			data = marked(data.toString('utf-8'));
+			console.log(`rendered ${fileName}: ${data.slice(0, 20)}...${data.length}...${data.slice(-20)}`);
+			data = Buffer.from(data);
 		}
 
 		return data;
@@ -15701,7 +15704,8 @@ module.exports = class ValenceApi {
 
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'POST');
 
-		console.log(`Creating module: '${module.title}'`);
+		const data = module.description || '';
+		console.log(`Creating module '${module.title}':  ${data.slice(0, 20)}...${data.length}...${data.slice(-20)}`);
 
 		const createModule = ContentFactory.createModule({
 			title: module.title,
@@ -15734,7 +15738,8 @@ module.exports = class ValenceApi {
 		const url = new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Identifier}/content/modules/${self.Id}`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'PUT');
 
-		console.log(`Updating module: '${self.Title}'`);
+		const data = module.description || '';
+		console.log(`Updating module '${self.Title}':  ${data.slice(0, 20)}...${data.length}...${data.slice(-20)}`);
 
 		let isDirty = false;
 		if (self.Title !== module.title) {
@@ -15792,7 +15797,11 @@ module.exports = class ValenceApi {
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'POST');
 
 		const fileName = topic.fileName.replace(/.md$/, '.html');
-		console.log(`Creating topic: '${topic.title}' with file: '${fileName}'`);
+		if (fileName.endsWith('.html')) {
+			console.log(`Creating topic '${fileName}':  ${data.slice(0, 20)}...${data.length}...${data.slice(-20)}`);
+		} else {
+			console.log(`Creating resource '${topic.title}' with file: '${fileName}'`);
+		}
 
 		const createTopic = ContentFactory.createTopic({
 			title: topic.title,
@@ -15839,8 +15848,6 @@ module.exports = class ValenceApi {
 		const url = new URL(`/d2l/api/le/${LEVersion}/${orgUnit.Identifier}/content/topics/${self.Id}`, instanceUrl);
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'PUT');
 
-		console.log(`Updating topic: '${self.Title}'`);
-
 		let isDirty = false;
 		if (self.Title !== topic.title) {
 			self.Title = topic.title;
@@ -15884,7 +15891,11 @@ module.exports = class ValenceApi {
 		const signedUrl = this._valence.createAuthenticatedUrl(url, 'PUT');
 
 		const fileName = topic.fileName.replace(/.md$/, '.html');
-		console.log(`Updating topic file: '${fileName}'`);
+		if (fileName.endsWith('.html')) {
+			console.log(`Updating topic '${fileName}':  ${data.slice(0, 10)}...${data.length}...${data.slice(-10)}`);
+		} else {
+			console.log(`Updating resource file: '${fileName}'`);
+		}
 
 		const formData = new FormData();
 		formData.append(
