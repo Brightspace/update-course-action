@@ -15,7 +15,8 @@
     "IsHidden": false,
     "IsLocked": false,
     "Description": {
-      "Html": "<html>Update!</html>"
+      "Content": "<html>Update!</html>",
+      "Type": "Html"
     }
   }
 }

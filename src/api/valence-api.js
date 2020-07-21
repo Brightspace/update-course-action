@@ -110,7 +110,10 @@ module.exports = class ValenceApi {
 		}
 
 		if (self.Description.Html !== module.description) {
-			self.Description.Html = module.description;
+			self.Description = {
+				Content: module.description,
+				Type: 'Html'
+			};
 			isDirty = true;
 		}
 
