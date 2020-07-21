@@ -13,7 +13,7 @@ module.exports = class FileHandler {
 
 	async getContent(fileName) {
 		if (!fileName) {
-			return { data: null, mimeType: null};
+			return { data: null, mimeType: null };
 		}
 
 		let data = await fs.promises.readFile(`${this._contentPath}/${fileName}`);

@@ -12283,7 +12283,7 @@ module.exports = class FileHandler {
 
 	async getContent(fileName) {
 		if (!fileName) {
-			return { data: null, mimeType: null};
+			return { data: null, mimeType: null };
 		}
 
 		let data = await fs.promises.readFile(`${this._contentPath}/${fileName}`);
@@ -15744,7 +15744,10 @@ module.exports = class ValenceApi {
 		}
 
 		if (self.Description.Html !== module.description) {
-			self.Description.Html = module.description;
+			self.Description = {
+				Content: module.description,
+				Type: 'Html'
+			};
 			isDirty = true;
 		}
 
