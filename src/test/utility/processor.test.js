@@ -4,6 +4,7 @@ const path = require('path');
 const test = require('ava');
 
 const Processor = require('../../utility/processor');
+const FileHandler = require('../../utility/file-handler');
 
 const ContentPath = path.join(__dirname, '..', 'content');
 
@@ -16,13 +17,13 @@ const OrgUnit = {
 const TestModule = {
 	title: 'Test Module',
 	type: 'module',
-	descriptionFileName: 'test-module/index.md',
+	descriptionFileName: 'test-module/index.html',
 	dueDate: '2020-01-01T00:00:00.000Z',
 	children: [
 		{
 			title: 'Test Topic',
 			type: 'topic',
-			fileName: 'test-module/test-topic.md',
+			fileName: 'test-module/test-topic.html',
 			isRequired: true
 		},
 		{
@@ -51,7 +52,7 @@ test('asserts module', async t => {
 				title: module.title,
 				type: 'module',
 				description: '<html></html>\n',
-				descriptionFileName: 'test-module/index.md',
+				descriptionFileName: 'test-module/index.html',
 				dueDate: module.dueDate,
 				id: 1
 			};
@@ -63,7 +64,7 @@ test('asserts module', async t => {
 				title: 'Test Module',
 				type: 'module',
 				description: '<html></html>\n',
-				descriptionFileName: 'test-module/index.md',
+				descriptionFileName: 'test-module/index.html',
 				dueDate: '2020-01-01T00:00:00.000Z',
 				id: 1
 			});
@@ -72,7 +73,7 @@ test('asserts module', async t => {
 				t.deepEqual(topic, {
 					title: 'Test Topic',
 					type: 'topic',
-					fileName: 'test-module/test-topic.md',
+					fileName: 'test-module/test-topic.html',
 					isRequired: true
 				});
 				t.is(data.toString('utf-8'), '<h1></h1>\n');
@@ -103,7 +104,7 @@ test('asserts module', async t => {
 				title: 'Test Module',
 				type: 'module',
 				description: '<html></html>\n',
-				descriptionFileName: 'test-module/index.md',
+				descriptionFileName: 'test-module/index.html',
 				dueDate: '2020-01-01T00:00:00.000Z',
 				id: 1
 			});
@@ -119,7 +120,8 @@ test('asserts module', async t => {
 		}
 	};
 
-	const processor = new Processor({ contentPath: ContentPath }, MockValenceApi);
+	const fileHandler = new FileHandler(ContentPath);
+	const processor = new Processor(fileHandler, MockValenceApi);
 
 	const results = await processor.processModule('https://example.com/', OrgUnit, TestModule);
 
@@ -128,13 +130,13 @@ test('asserts module', async t => {
 		title: 'Test Module',
 		type: 'module',
 		description: '<html></html>\n',
-		descriptionFileName: 'test-module/index.md',
+		descriptionFileName: 'test-module/index.html',
 		dueDate: '2020-01-01T00:00:00.000Z'
 	}, {
 		id: 2,
 		title: 'Test Topic',
 		type: 'topic',
-		fileName: 'test-module/test-topic.md',
+		fileName: 'test-module/test-topic.html',
 		isRequired: true
 	}, {
 		id: 3,

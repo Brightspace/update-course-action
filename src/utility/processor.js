@@ -1,13 +1,11 @@
 'use strict';
 
-const fs = require('fs');
-
 module.exports = class Processor {
 	constructor(
-		{ contentPath },
+		fileHandler,
 		valence
 	) {
-		this._contentPath = contentPath;
+		this._fileHandler = fileHandler;
 		this._valence = valence;
 	}
 
@@ -59,9 +57,8 @@ module.exports = class Processor {
 	}
 
 	async _processTopic(instanceUrl, orgUnit, topic, parentModule) {
-		const fileName = topic.fileName.replace(/.md$/, '.html');
-
-		const data = await fs.promises.readFile(`${this._contentPath}/${fileName}`);
+		const content = await this._fileHandler.getContent(topic.fileName);
+		const data = content.toString('utf-8');
 
 		return this._valence.assertTopic(instanceUrl, orgUnit, { module: parentModule, topic, data });
 	}
@@ -75,9 +72,7 @@ module.exports = class Processor {
 			return null;
 		}
 
-		const descriptionFileName = module.descriptionFileName.replace(/.md$/, '.html');
-
-		const buffer = await fs.promises.readFile(`${this._contentPath}/${descriptionFileName}`);
-		return buffer.toString('utf-8');
+		const content = await this._fileHandler.getContent(module.descriptionFileName);
+		return content.toString('utf-8');
 	}
 };

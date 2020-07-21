@@ -4,6 +4,7 @@ const path = require('path');
 const test = require('ava');
 
 const UploadCourseContent = require('../upload-course-content');
+const FileHandler = require('../utility/file-handler');
 
 const ContentPath = path.join(__dirname, 'content');
 const ManifestPath = path.join(__dirname, 'content/manifest.json');
@@ -80,7 +81,8 @@ test('uploadCourseContent processes module', async t => {
 		}
 	}
 
-	const uploader = new UploadCourseContent({ contentDirectory: ContentPath, manifestPath: ManifestPath }, ValenceApiMock, MockModuleProcessor);
+	const fileHandler = new FileHandler(ContentPath);
+	const uploader = new UploadCourseContent(ManifestPath, fileHandler, ValenceApiMock, MockModuleProcessor);
 
 	const response = await uploader.uploadCourseContent('https://example.com/', 123);
 

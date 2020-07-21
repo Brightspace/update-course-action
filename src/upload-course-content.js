@@ -4,20 +4,15 @@ const fs = require('fs');
 
 module.exports = class UploadCourseContent {
 	constructor(
-		{
-			contentDirectory,
-			manifestPath
-		},
+		manifestPath,
+		fileHandler,
 		valence,
 		Processor = require('./utility/processor')
 	) {
 		this._valence = valence;
-		this._contentDir = contentDirectory;
+		this._fileHandler = fileHandler;
 		this._manifestPath = manifestPath;
-
-		this._markdownRegex = /.md$/i;
-
-		this._processor = new Processor({ contentPath: contentDirectory }, valence);
+		this._processor = new Processor(fileHandler, valence);
 	}
 
 	/**

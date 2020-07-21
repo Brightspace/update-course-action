@@ -1,17 +1,15 @@
 'use strict';
 
-const path = require('path');
 const parser = require('parse5');
+const path = require('path');
 
 module.exports = class LinkRewriter {
 	constructor(
-		contentPath,
-		valence,
-		fs = require('fs')
+		fileHandler,
+		valence
 	) {
-		this._contentPath = contentPath;
+		this._fileHandler = fileHandler;
 		this._valence = valence;
-		this._fs = fs;
 	}
 
 	async rewriteLinks(instanceUrl, orgUnitId, uploadedManifest) {
@@ -23,7 +21,8 @@ module.exports = class LinkRewriter {
 	}
 
 	async _processItemLinks(instanceUrl, orgUnit, manifest, item) {
-		if (!item.descriptionFileName && !item.fileName) {
+		const fileName = item.descriptionFileName || item.fileName;
+		if (!fileName) {
 			return;
 		}
 
@@ -39,12 +38,14 @@ module.exports = class LinkRewriter {
 				continue;
 			}
 
-			console.log(`Found relative link: '${href.value}' in '${item.descriptionFileName || item.fileName}`);
+			let targetPath = href.value;
+			if (targetPath.startsWith('.')) {
+				targetPath = path.normalize(path.join(path.dirname(fileName), targetPath)).replace(/\\/g, '/');
+			}
 
-			const targetFileName = href.value.replace('../', '').replace(/.html$/, '.md');
-			const target = manifest.find(x => x.descriptionFileName === targetFileName || x.fileName === targetFileName);
+			const target = manifest.find(x => x.descriptionFileName === targetPath || x.fileName === targetPath);
 			if (!target) {
-				throw new Error('Could not find matching content item');
+				throw new Error(`Could not find target of link in '${fileName}' to '${href.value}'. Resolved as '${targetPath}'`);
 			}
 
 			const newHref = this._getNewHref(orgUnit, item, target);
@@ -78,19 +79,9 @@ module.exports = class LinkRewriter {
 	}
 
 	async _getFileContents(item) {
-		const filePath = path.join(this._contentPath, this._getFileName(item));
-		const buffer = await this._fs.promises.readFile(filePath);
-		return buffer.toString('utf-8');
-	}
-
-	async _writeFileContents(item, data) {
-		const filePath = path.join(this._contentPath, this._getFileName(item));
-		return this._fs.promises.writeFile(filePath, data);
-	}
-
-	_getFileName(item) {
 		const fileName = item.descriptionFileName || item.fileName;
-		return fileName.replace(/.md$/, '.html');
+		const content = await this._fileHandler.getContent(fileName);
+		return content.toString('utf-8');
 	}
 
 	* _getAllLinks(node) {
