@@ -19,7 +19,7 @@ const OrgUnit = {
 test.serial('rewriteLinks updates module link to topic', async t => {
 	mockFs({
 		'/testdata/module1/index.html': '<html><body><a href="module1/topic1.md">Topic 1</a></body></html>',
-		'/testdata/module1/topic1.md': '<html><body><p>Content</p></body></html>'
+		'/testdata/module1/topic1.md': '# Content'
 	});
 
 	const manifest = [{
@@ -97,9 +97,9 @@ test.serial('rewriteLinks updates topic link to module', async t => {
 test.serial('rewriteLinks updates complex links', async t => {
 	mockFs({
 		'/testdata/module1/index1.html': '<html><body><a href="/module1/module2/topic4.md">Topic</a></body></html>',
-		'/testdata/module1/topic2.md': '<html><body><a href="./module2/topic4.md">Topic</a></body></html>',
+		'/testdata/module1/topic2.md': '[Topic](./module2/topic4.md)',
 		'/testdata/module1/module2/index3.html': '<html><body><a href="../topic2.md">Topic</a></body></html>',
-		'/testdata/module1/module2/topic4.md': '<html><body><a href="../../module1/topic2.md">Topic</a></body></html>'
+		'/testdata/module1/module2/topic4.md': '[Topic](../../module1/topic2.md)'
 	});
 
 	const manifest = [{
@@ -129,10 +129,10 @@ test.serial('rewriteLinks updates complex links', async t => {
 		assertTopic: (instanceUrl, orgUnit, { topic, data }) => {
 			if (topic.id === 2) {
 				t.deepEqual(topic, manifest[1]);
-				t.is(data, '<html><head></head><body><a href="/d2l/le/lessons/123/topics/4" target="_parent">Topic</a></body></html>');
+				t.is(data, '<html><head></head><body><p><a href="/d2l/le/lessons/123/topics/4" target="_parent">Topic</a></p>\n</body></html>');
 			} else if (topic.id === 4) {
 				t.deepEqual(topic, manifest[3]);
-				t.is(data, '<html><head></head><body><a href="/d2l/le/lessons/123/topics/2" target="_parent">Topic</a></body></html>');
+				t.is(data, '<html><head></head><body><p><a href="/d2l/le/lessons/123/topics/2" target="_parent">Topic</a></p>\n</body></html>');
 			} else {
 				t.fail();
 			}
