@@ -12712,9 +12712,10 @@ module.exports = class LinkRewriter {
 	async rewriteLinks(instanceUrl, orgUnitId, uploadedManifest) {
 		const orgUnit = await this._valence.getOrgUnit(instanceUrl, orgUnitId);
 
-		await Promise.all(
-			uploadedManifest.map(async x => this._processItemLinks(instanceUrl, orgUnit, uploadedManifest, x))
-		);
+		for (const item of uploadedManifest) {
+			// eslint-disable-next-line no-await-in-loop
+			await this._processItemLinks(instanceUrl, orgUnit, uploadedManifest, item);
+		}
 	}
 
 	async _processItemLinks(instanceUrl, orgUnit, manifest, item) {
@@ -15892,7 +15893,7 @@ module.exports = class ValenceApi {
 
 		const fileName = topic.fileName.replace(/.md$/, '.html');
 		if (fileName.endsWith('.html')) {
-			console.log(`Updating topic '${fileName}':  ${data.slice(0, 10)}...${data.length}...${data.slice(-10)}`);
+			console.log(`Updating topic '${fileName}':  ${data.slice(0, 20)}...${data.length}...${data.slice(-20)}`);
 		} else {
 			console.log(`Updating resource file: '${fileName}'`);
 		}

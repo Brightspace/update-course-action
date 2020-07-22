@@ -15,9 +15,10 @@ module.exports = class LinkRewriter {
 	async rewriteLinks(instanceUrl, orgUnitId, uploadedManifest) {
 		const orgUnit = await this._valence.getOrgUnit(instanceUrl, orgUnitId);
 
-		await Promise.all(
-			uploadedManifest.map(async x => this._processItemLinks(instanceUrl, orgUnit, uploadedManifest, x))
-		);
+		for (const item of uploadedManifest) {
+			// eslint-disable-next-line no-await-in-loop
+			await this._processItemLinks(instanceUrl, orgUnit, uploadedManifest, item);
+		}
 	}
 
 	async _processItemLinks(instanceUrl, orgUnit, manifest, item) {
