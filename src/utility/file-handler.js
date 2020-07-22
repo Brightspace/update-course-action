@@ -1,6 +1,5 @@
 'use strict';
 
-const marked = require('marked');
 const fs = require('fs');
 
 module.exports = class FileHandler {
@@ -21,7 +20,7 @@ module.exports = class FileHandler {
 		// If the file is a markdown file, render it to HTML.
 		if (fileName.match(/\.md$/)) {
 			console.log(`rendering ${fileName}`);
-			data = marked(data.toString('utf8'));
+			data = data.toString('utf8');
 			console.log(`rendered ${fileName}: ${data.slice(0, 20)}...${data.length}...${data.slice(-20)}`);
 			data = Buffer.from(data);
 		}
