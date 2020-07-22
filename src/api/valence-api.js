@@ -255,7 +255,7 @@ module.exports = class ValenceApi {
 
 		const fileName = topic.fileName.replace(/.md$/, '.html');
 		if (fileName.endsWith('.html')) {
-			console.log(`Updating topic '${fileName}':  ${data.slice(0, 10)}...${data.length}...${data.slice(-10)}`);
+			console.log(`Updating topic '${fileName}':  ${data.slice(0, 20)}...${data.length}...${data.slice(-20)}`);
 		} else {
 			console.log(`Updating resource file: '${fileName}'`);
 		}
