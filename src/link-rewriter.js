@@ -1,6 +1,6 @@
 'use strict';
 
-const parser = require('parse5');
+const jsdom = require('jsdom');
 const path = require('path');
 
 module.exports = class LinkRewriter {
@@ -28,45 +28,40 @@ module.exports = class LinkRewriter {
 		}
 
 		const file = await this._getFileContents(item);
-		const document = parser.parse(file);
 
-		const links = this._getAllLinks(document);
+		const dom = new jsdom.JSDOM(file);
+
+		const links = dom.window.document.querySelectorAll('a');
 
 		let isDirty = false;
 		for (const link of links) {
-			const href = link.attrs.find(x => x.name === 'href');
-			if (!href || href.value.includes('://') || href.value.startsWith('/') || href.value.startsWith('#')) {
+			const href = link.href;
+			if (!href || href.includes('://') || href.startsWith('/') || href.startsWith('#')) {
 				continue;
 			}
 
-			let targetPath = href.value;
+			let targetPath = href;
 			if (targetPath.startsWith('.')) {
 				targetPath = path.normalize(path.join(path.dirname(fileName), targetPath)).replace(/\\/g, '/');
 			}
 
 			const target = manifest.find(x => x.descriptionFileName === targetPath || x.fileName === targetPath);
 			if (!target) {
-				throw new Error(`Could not find target of link in '${fileName}' to '${href.value}'. Resolved as '${targetPath}'`);
+				throw new Error(`Could not find target of link in '${fileName}' to '${href}'. Resolved as '${targetPath}'`);
 			}
 
-			const newHref = this._getNewHref(orgUnit, item, target);
+			const newHref = this._getNewHref(orgUnit, target);
 
-			console.log(`Updating link: '${href.value}' => '${newHref}'`);
+			console.log(`Updating link: '${href}' => '${newHref}'`);
 
-			href.value = newHref;
-
-			const linkTarget = link.attrs.find(x => x.name === 'target');
-			if (linkTarget) {
-				linkTarget.value = '_parent';
-			} else {
-				link.attrs.push({ name: 'target', value: '_parent' });
-			}
+			link.href = newHref;
+			link.target = '_parent';
 
 			isDirty = true;
 		}
 
 		if (isDirty) {
-			const data = parser.serialize(document);
+			const data = dom.serialize();
 
 			if (item.type === 'module') {
 				item.description = data;
@@ -85,25 +80,7 @@ module.exports = class LinkRewriter {
 		return content.toString('utf8');
 	}
 
-	* _getAllLinks(node) {
-		if (!node) {
-			return;
-		}
-
-		if (node.nodeName === 'a' || node.nodeName === 'd2l-link') {
-			yield node;
-		}
-
-		if (!node.childNodes) {
-			return;
-		}
-
-		for (const child of node.childNodes) {
-			yield* this._getAllLinks(child);
-		}
-	}
-
-	_getNewHref(orgUnit, item, target) {
+	_getNewHref(orgUnit, target) {
 		if (target.type === 'module') {
 			return `/d2l/le/lessons/${orgUnit.Identifier}/units/${target.id}`;
 		}
