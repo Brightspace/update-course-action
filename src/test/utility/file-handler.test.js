@@ -26,7 +26,7 @@ test('throws on NotFound', async t => {
 test('fetches html', async t => {
 	const handler = new FileHandler('content');
 	const info = await handler.getContent('module/test.html');
-	t.is(info.toString('utf-8'), htmlTestValue);
+	t.is(info.toString('utf8'), htmlTestValue);
 });
 
 test('fetches binary data', async t => {
@@ -38,12 +38,12 @@ test('fetches binary data', async t => {
 test('renders markdown', async t => {
 	const handler = new FileHandler('content');
 	const info = await handler.getContent('test.md');
-	t.is(info.toString('utf-8'), '<h1 id="markdown">Markdown!</h1>\n');
+	t.is(info.toString('utf8'), '<h1 id="markdown">Markdown!</h1>\n');
 });
 
 test('renders html and markdown together', async t => {
 	const handler = new FileHandler('content');
 	const info = await handler.getContent('test2.md');
-	t.is(info.toString('utf-8'), '<h1 id="markdown">Markdown!</h1>\n<p><b>Now with more HTML</b></p>\n');
+	t.is(info.toString('utf8'), '<h1 id="markdown">Markdown!</h1>\n<p><b>Now with more HTML</b></p>\n');
 });
 

@@ -46,6 +46,6 @@ module.exports = class UploadCourseContent {
 	async _getManifest() {
 		const manifest = await fs.promises.readFile(this._manifestPath);
 
-		return JSON.parse(manifest.toString('utf-8'));
+		return JSON.parse(manifest.toString('utf8'));
 	}
 };

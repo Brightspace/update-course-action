@@ -76,7 +76,7 @@ test('asserts module', async t => {
 					fileName: 'test-module/test-topic.html',
 					isRequired: true
 				});
-				t.is(data.toString('utf-8'), '<h1></h1>\n');
+				t.is(data.toString('utf8'), '<h1></h1>\n');
 
 				return {
 					...topic,

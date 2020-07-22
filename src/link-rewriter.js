@@ -82,7 +82,7 @@ module.exports = class LinkRewriter {
 	async _getFileContents(item) {
 		const fileName = item.descriptionFileName || item.fileName;
 		const content = await this._fileHandler.getContent(fileName);
-		return content.toString('utf-8');
+		return content.toString('utf8');
 	}
 
 	* _getAllLinks(node) {

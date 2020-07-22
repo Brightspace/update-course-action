@@ -6755,14 +6755,14 @@ module.exports = class Processor {
 			...resource,
 			title: resource.fileName
 		};
+
 		return this._valence.assertTopic(instanceUrl, orgUnit, { module: parentModule, topic, data });
 	}
 
 	async _processTopic(instanceUrl, orgUnit, topic, parentModule) {
-		let data = await this._fileHandler.getContent(topic.fileName);
-		data = data.toString('utf-8');
+		const data = await this._fileHandler.getContent(topic.fileName);
 
-		return this._valence.assertTopic(instanceUrl, orgUnit, { module: parentModule, topic, data });
+		return this._valence.assertTopic(instanceUrl, orgUnit, { module: parentModule, topic, data: data.toString('utf8') });
 	}
 
 	async _processQuiz(instanceUrl, orgUnit, quiz, parentModule) {
@@ -6775,7 +6775,7 @@ module.exports = class Processor {
 		}
 
 		const content = await this._fileHandler.getContent(module.descriptionFileName);
-		return content.toString('utf-8');
+		return content.toString('utf8');
 	}
 };
 
@@ -11328,7 +11328,7 @@ module.exports = class UploadCourseContent {
 	async _getManifest() {
 		const manifest = await fs.promises.readFile(this._manifestPath);
 
-		return JSON.parse(manifest.toString('utf-8'));
+		return JSON.parse(manifest.toString('utf8'));
 	}
 };
 
@@ -12291,7 +12291,7 @@ module.exports = class FileHandler {
 		// If the file is a markdown file, render it to HTML.
 		if (fileName.match(/\.md$/)) {
 			console.log(`rendering ${fileName}`);
-			data = marked(data.toString('utf-8'));
+			data = marked(data.toString('utf8'));
 			console.log(`rendered ${fileName}: ${data.slice(0, 20)}...${data.length}...${data.slice(-20)}`);
 			data = Buffer.from(data);
 		}
@@ -12779,7 +12779,7 @@ module.exports = class LinkRewriter {
 	async _getFileContents(item) {
 		const fileName = item.descriptionFileName || item.fileName;
 		const content = await this._fileHandler.getContent(fileName);
-		return content.toString('utf-8');
+		return content.toString('utf8');
 	}
 
 	* _getAllLinks(node) {

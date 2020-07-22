@@ -53,14 +53,14 @@ module.exports = class Processor {
 			...resource,
 			title: resource.fileName
 		};
+
 		return this._valence.assertTopic(instanceUrl, orgUnit, { module: parentModule, topic, data });
 	}
 
 	async _processTopic(instanceUrl, orgUnit, topic, parentModule) {
-		let data = await this._fileHandler.getContent(topic.fileName);
-		data = data.toString('utf-8');
+		const data = await this._fileHandler.getContent(topic.fileName);
 
-		return this._valence.assertTopic(instanceUrl, orgUnit, { module: parentModule, topic, data });
+		return this._valence.assertTopic(instanceUrl, orgUnit, { module: parentModule, topic, data: data.toString('utf8') });
 	}
 
 	async _processQuiz(instanceUrl, orgUnit, quiz, parentModule) {
@@ -73,6 +73,6 @@ module.exports = class Processor {
 		}
 
 		const content = await this._fileHandler.getContent(module.descriptionFileName);
-		return content.toString('utf-8');
+		return content.toString('utf8');
 	}
 };
