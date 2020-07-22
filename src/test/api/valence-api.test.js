@@ -2,7 +2,6 @@
 
 const test = require('ava');
 const fetchMock = require('fetch-mock');
-const FormData = require('form-data');
 
 const ValenceApi = require('../../api/valence-api');
 
@@ -397,9 +396,7 @@ test('_createTopic returns created topic', async t => {
 		}
 
 		const boundary = options.headers['Content-Type'].match(/boundary=(?<boundary>.*?)$/).groups.boundary;
-
-		const formData = new FormData(options.body);
-		const body = formData.getBuffer().toString('utf8');
+		const body = options.body.toString('utf8');
 
 		return body === `--${boundary}\r\nContent-Disposition: form-data; name=""\r\nContent-Type: application/json\r\n\r\n`
 			+ '{"Title":"Test Topic","ShortTitle":"Test Topic","Type":1,"TopicType":1,"StartDate":null,"EndDate":null,"DueDate":null,"Url":"/content/course123/test-module/test-topic.html","IsHidden":false,"IsLocked":false,"IsExempt":false}\r\n'

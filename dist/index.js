@@ -15835,7 +15835,7 @@ module.exports = class ValenceApi {
 				headers: {
 					'Content-Type': `multipart/mixed; boundary=${formData.getBoundary()}`
 				},
-				body: formData
+				body: formData.getBuffer()
 			});
 
 		this._assertResponse(response);
@@ -15916,7 +15916,7 @@ module.exports = class ValenceApi {
 				headers: {
 					'Content-Type': `multipart/form-data; boundary=${formData.getBoundary()}`
 				},
-				body: formData
+				body: formData.getBuffer()
 			});
 
 		this._assertResponse(response);
