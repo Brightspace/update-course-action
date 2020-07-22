@@ -18,8 +18,6 @@ async function run() {
 	const rewriter = new LinkRewriter(fileHandler, api);
 
 	const manifest = await uploader.uploadCourseContent(validator.getInstanceDomain(), validator.getCourseOrgUnitId());
-
-	await rewriter.rewriteLinks(validator.getInstanceDomain(), validator.getCourseOrgUnitId(), manifest);
 }
 
 run().catch(error => core.setFailed(error.message));
