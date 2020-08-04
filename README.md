@@ -2,6 +2,16 @@
 
 This GitHub Action can be used to upload course content to a course in a Brightspace LMS. A manifest.json file must be provided to identify the order and structure of content files to be uploaded.
 
+Content files supplied in Markdown format will be rendered to HTML prior to uploading to Brightspace.
+
+## Known Issues
+
+- Quizzes must be created in the target course prior to creating the content
+- Quiz titles must match the title used in the manifest to successfully link the quiz
+- Resource items are not replaced during updates due to limitations of the Brightspace API
+- New item creation is not atomic due to the need to rewrite internal links after uploading
+- Orphaned manifest items are not removed from Brightspace
+
 ## Quick start
 
 Sample workflow:
@@ -52,14 +62,16 @@ Sample manifest.json file:
           "title": "Topic One",
           "type": "topic",
           "fileName": "sample/topic-one.md"
-        }
+        },
+				{
+				  "title": "Quiz 1",
+					"type": "quiz"
+				}
       ]
     }
   ]
 }
 ```
-
-This action assumes that any *.md files referenced in the manifest have been rendered to *.html files in an earlier step in the workflow; see Brightspace/render-docs-action.
 
 ## Documentation
 
