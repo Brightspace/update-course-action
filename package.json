@@ -14,7 +14,7 @@
     "marked": "^2.0.0",
     "mime": "^2.4.6",
     "node-fetch": "^2.6.1",
-    "validator": "^13.1.17"
+    "validator": "^13.7.0"
   },
   "devDependencies": {
     "@zeit/ncc": "^0.22.3",
