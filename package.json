@@ -7,7 +7,7 @@
     "build": "ncc build src/index.js"
   },
   "dependencies": {
-    "@actions/core": "^1.2.6",
+    "@actions/core": "^1.9.1",
     "@actions/github": "^3.0.0",
     "form-data": "^3.0.0",
     "jsdom": "^16.3.0",
