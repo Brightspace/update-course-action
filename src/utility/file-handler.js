@@ -1,9 +1,7 @@
-'use strict';
+import marked from 'marked';
+import fs from 'fs';
 
-const marked = require('marked');
-const fs = require('fs');
-
-module.exports = class FileHandler {
+export default class FileHandler {
 	constructor(
 		contentPath
 	) {

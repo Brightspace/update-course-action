@@ -1,6 +1,4 @@
-'use strict';
-
-module.exports = class ContentFactory {
+export default class ContentFactory {
 	static createRichText(content, type) {
 		return {
 			Content: content,

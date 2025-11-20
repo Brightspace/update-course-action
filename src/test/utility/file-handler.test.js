@@ -1,9 +1,6 @@
-'use strict';
-
-const test = require('ava');
-const mockFs = require('mock-fs');
-
-const FileHandler = require('../../utility/file-handler');
+import test from 'ava';
+import mockFs from 'mock-fs';
+import FileHandler from '../../utility/file-handler.js';
 
 const pngTestValue = Buffer.from([8, 6, 7, 5, 3, 0, 9]);
 const htmlTestValue = '<html></html>';

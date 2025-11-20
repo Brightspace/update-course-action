@@ -1,10 +1,10 @@
-'use strict';
+import test from 'ava';
+import fetchMock from 'fetch-mock';
+import FormData from 'form-data';
+import ValenceApi from '../../api/valence-api.js';
+import { createRequire } from 'module';
 
-const test = require('ava');
-const fetchMock = require('fetch-mock');
-const FormData = require('form-data');
-
-const ValenceApi = require('../../api/valence-api');
+const require = createRequire(import.meta.url);
 
 const ValenceMock = {
 	createAuthenticatedUrl(url) {

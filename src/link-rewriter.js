@@ -1,9 +1,7 @@
-'use strict';
+import jsdom from 'jsdom';
+import path from 'path';
 
-const jsdom = require('jsdom');
-const path = require('path');
-
-module.exports = class LinkRewriter {
+export default class LinkRewriter {
 	constructor(
 		fileHandler,
 		valence

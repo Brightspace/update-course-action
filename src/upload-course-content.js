@@ -1,18 +1,17 @@
-'use strict';
+import fs from 'fs';
+import Processor from './utility/processor.js';
 
-const fs = require('fs');
-
-module.exports = class UploadCourseContent {
+export default class UploadCourseContent {
 	constructor(
 		manifestPath,
 		fileHandler,
 		valence,
-		Processor = require('./utility/processor')
+		ProcessorClass = Processor
 	) {
 		this._valence = valence;
 		this._fileHandler = fileHandler;
 		this._manifestPath = manifestPath;
-		this._processor = new Processor(fileHandler, valence);
+		this._processor = new ProcessorClass(fileHandler, valence);
 	}
 
 	/**

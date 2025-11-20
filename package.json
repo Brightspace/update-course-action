@@ -1,9 +1,10 @@
 {
   "name": "update-course-action",
   "version": "1.0.0",
+  "type": "module",
   "main": "src/index.js",
   "scripts": {
-    "test": "xo -v && ava -v",
+    "test": "ava -v",
     "build": "ncc build src/index.js"
   },
   "dependencies": {

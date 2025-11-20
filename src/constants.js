@@ -1,7 +1,3 @@
-'use strict';
-
-module.exports = {
-	DryRunId: 0,
-	LEVersion: '1.44',
-	LPVersion: '1.26'
-};
+export const DryRunId = 0;
+export const LEVersion = '1.44';
+export const LPVersion = '1.26';
