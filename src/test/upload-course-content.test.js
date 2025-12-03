@@ -1,10 +1,11 @@
-'use strict';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import test from 'ava';
+import UploadCourseContent from '../upload-course-content.js';
+import FileHandler from '../utility/file-handler.js';
 
-const path = require('path');
-const test = require('ava');
-
-const UploadCourseContent = require('../upload-course-content');
-const FileHandler = require('../utility/file-handler');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const ContentPath = path.join(__dirname, 'content');
 const ManifestPath = path.join(__dirname, 'content/manifest.json');

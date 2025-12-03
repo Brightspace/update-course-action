@@ -1,8 +1,5 @@
-'use strict';
-
-const test = require('ava');
-
-const ValenceAuth = require('../../auth/valence-auth');
+import test from 'ava';
+import ValenceAuth from '../../auth/valence-auth.js';
 
 test('createAuthenticatedUrl returns a signed url', t => {
 	const auth = new ValenceAuth({

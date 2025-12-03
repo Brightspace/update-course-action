@@ -1,6 +1,4 @@
-'use strict';
-
-module.exports = class Processor {
+export default class Processor {
 	constructor(
 		fileHandler,
 		valence

@@ -1,15 +1,13 @@
-'use strict';
+import FormData from 'form-data';
+import { DryRunId, LEVersion, LPVersion } from '../constants.js';
+import ContentFactory from '../utility/content-factory.js';
+import mime from 'mime';
 
-const FormData = require('form-data');
-const { DryRunId, LEVersion, LPVersion } = require('../constants');
-const ContentFactory = require('../utility/content-factory');
-const mime = require('mime');
-
-module.exports = class ValenceApi {
+export default class ValenceApi {
 	constructor(
 		valence,
 		isDryRun,
-		fetch = require('node-fetch')
+		fetch
 	) {
 		this._valence = valence;
 		this._isDryRun = isDryRun;

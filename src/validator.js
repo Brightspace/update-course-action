@@ -1,8 +1,6 @@
-'use strict';
+import validator from 'validator';
 
-const validator = require('validator');
-
-module.exports = class ActionValidator {
+export default class ActionValidator {
 	constructor(core) {
 		this.core = core;
 	}

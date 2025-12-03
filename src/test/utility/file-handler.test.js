@@ -1,9 +1,6 @@
-'use strict';
-
-const test = require('ava');
-const mockFs = require('mock-fs');
-
-const FileHandler = require('../../utility/file-handler');
+import test from 'ava';
+import mockFs from 'mock-fs';
+import FileHandler from '../../utility/file-handler.js';
 
 const pngTestValue = Buffer.from([8, 6, 7, 5, 3, 0, 9]);
 const htmlTestValue = '<html></html>';
@@ -18,9 +15,12 @@ test.after(mockFs.restore);
 
 test('throws on NotFound', async t => {
 	const handler = new FileHandler('content');
-	await t.throwsAsync(async () => {
+	try {
 		await handler.getContent('fileDoesntExist.txt');
-	});
+		t.fail('Expected error to be thrown');
+	} catch (error) {
+		t.is(error.code, 'ENOENT');
+	}
 });
 
 test('fetches html', async t => {
@@ -38,12 +38,12 @@ test('fetches binary data', async t => {
 test('renders markdown', async t => {
 	const handler = new FileHandler('content');
 	const info = await handler.getContent('test.md');
-	t.is(info.toString('utf-8'), '<h1 id="markdown">Markdown!</h1>\n');
+	t.is(info.toString('utf-8'), '<h1>Markdown!</h1>\n');
 });
 
 test('renders html and markdown together', async t => {
 	const handler = new FileHandler('content');
 	const info = await handler.getContent('test2.md');
-	t.is(info.toString('utf-8'), '<h1 id="markdown">Markdown!</h1>\n<p><b>Now with more HTML</b></p>\n');
+	t.is(info.toString('utf-8'), '<h1>Markdown!</h1>\n<p><b>Now with more HTML</b></p>\n');
 });
 

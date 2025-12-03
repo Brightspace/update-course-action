@@ -1,7 +1,5 @@
-'use strict';
-
-const test = require('ava');
-const Validator = require('../validator');
+import test from 'ava';
+import Validator from '../validator.js';
 
 class MockCore {
 	constructor(input) {

@@ -1,8 +1,6 @@
-'use strict';
+import crypto from 'crypto';
 
-const crypto = require('crypto');
-
-module.exports = class ValenceAuth {
+export default class ValenceAuth {
 	constructor(
 		{ appId, appKey, userId, userKey }
 	) {

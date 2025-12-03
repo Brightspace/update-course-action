@@ -1,10 +1,10 @@
-'use strict';
+import test from 'ava';
+import fetchMock from 'fetch-mock';
+import FormData from 'form-data';
+import ValenceApi from '../../api/valence-api.js';
+import { createRequire } from 'module';
 
-const test = require('ava');
-const fetchMock = require('fetch-mock');
-const FormData = require('form-data');
-
-const ValenceApi = require('../../api/valence-api');
+const require = createRequire(import.meta.url);
 
 const ValenceMock = {
 	createAuthenticatedUrl(url) {
@@ -27,10 +27,9 @@ const TestModule = {
 
 test('_getContent retrieves root content items', async t => {
 	const data = require('../../testdata/get-content-root.json');
-	const fetch = fetchMock.sandbox();
-	fetch.get({ url: 'https://example.com/d2l/api/le/1.44/123/content/root/' }, data);
+	const mock = fetchMock.createInstance().get('https://example.com/d2l/api/le/1.44/123/content/root/', data);
 
-	const api = new ValenceApi(ValenceMock, false, fetch);
+	const api = new ValenceApi(ValenceMock, false, mock.fetchHandler);
 
 	const result = await api._getContent('https://example.com/', OrgUnit);
 
@@ -38,20 +37,20 @@ test('_getContent retrieves root content items', async t => {
 });
 
 test('_getContent throws on HTTP error', async t => {
-	const fetch = fetchMock.sandbox();
-	fetch.get({ url: 'https://example.com/d2l/api/le/1.44/123/content/root/' }, 400);
+	const mock = fetchMock.createInstance();
+	mock.get({ url: 'https://example.com/d2l/api/le/1.44/123/content/root/' }, 400);
 
-	const api = new ValenceApi(ValenceMock, false, fetch);
+	const api = new ValenceApi(ValenceMock, false, mock.fetchHandler);
 
 	await t.throwsAsync(async () => api._getContent('https://example.com/', OrgUnit), { instanceOf: Error, message: 'Bad Request' });
 });
 
 test('_getContent retrieves module content items', async t => {
 	const data = require('../../testdata/get-content-module.json');
-	const fetch = fetchMock.sandbox();
-	fetch.get({ url: 'https://example.com/d2l/api/le/1.44/123/content/modules/1/structure/' }, data);
+	const mock = fetchMock.createInstance();
+	mock.get({ url: 'https://example.com/d2l/api/le/1.44/123/content/modules/1/structure/' }, data);
 
-	const api = new ValenceApi(ValenceMock, false, fetch);
+	const api = new ValenceApi(ValenceMock, false, mock.fetchHandler);
 
 	const result = await api._getContent('https://example.com/', OrgUnit, TestModule);
 
@@ -60,10 +59,10 @@ test('_getContent retrieves module content items', async t => {
 
 test('getOrgUnit retrieves orgunit', async t => {
 	const data = require('../../testdata/get-orgunit.json');
-	const fetch = fetchMock.sandbox();
-	fetch.get({ url: 'https://example.com/d2l/api/lp/1.26/courses/123' }, data);
+	const mock = fetchMock.createInstance();
+	mock.get({ url: 'https://example.com/d2l/api/lp/1.26/courses/123' }, data);
 
-	const api = new ValenceApi(ValenceMock, false, fetch);
+	const api = new ValenceApi(ValenceMock, false, mock.fetchHandler);
 
 	const result = await api.getOrgUnit('https://example.com/', 123);
 
@@ -71,19 +70,19 @@ test('getOrgUnit retrieves orgunit', async t => {
 });
 
 test('getOrgUnit throws on HTTP error', async t => {
-	const fetch = fetchMock.sandbox();
-	fetch.get({ url: 'https://example.com/d2l/api/lp/1.26/courses/123' }, 404);
+	const mock = fetchMock.createInstance();
+	mock.get({ url: 'https://example.com/d2l/api/lp/1.26/courses/123' }, 404);
 
-	const api = new ValenceApi(ValenceMock, false, fetch);
+	const api = new ValenceApi(ValenceMock, false, mock.fetchHandler);
 
 	await t.throwsAsync(async () => api.getOrgUnit('https://example.com/', 123), { instanceOf: Error, message: 'Not Found' });
 });
 
 test('assertModule calls _createModule', async t => {
-	const fetch = fetchMock.sandbox();
-	fetch.get({ url: 'https://example.com/d2l/api/le/1.44/123/content/root/' }, { status: 200, body: [] });
+	const mock = fetchMock.createInstance();
+	mock.get({ url: 'https://example.com/d2l/api/le/1.44/123/content/root/' }, { status: 200, body: [] });
 
-	const api = new ValenceApi(ValenceMock, false, fetch);
+	const api = new ValenceApi(ValenceMock, false, mock.fetchHandler);
 	api._createModule = (url, ou, m, pm) => {
 		t.is(url, 'https://example.com/');
 		t.deepEqual(ou, OrgUnit);
@@ -105,11 +104,11 @@ test('assertModule calls _createModule', async t => {
 });
 
 test('assertModule calls _updateModule', async t => {
-	const fetch = fetchMock.sandbox();
+	const mock = fetchMock.createInstance();
 	const response = require('../../testdata/get-content-root.json');
-	fetch.get({ url: 'https://example.com/d2l/api/le/1.44/123/content/root/' }, response);
+	mock.get({ url: 'https://example.com/d2l/api/le/1.44/123/content/root/' }, response);
 
-	const api = new ValenceApi(ValenceMock, false, fetch);
+	const api = new ValenceApi(ValenceMock, false, mock.fetchHandler);
 	api._updateModule = (url, ou, { module, self }) => {
 		t.is(url, 'https://example.com/');
 		t.deepEqual(ou, OrgUnit);
@@ -134,10 +133,10 @@ test('_createModule returns created module', async t => {
 	};
 
 	const response = require('../../testdata/post-module-response.json');
-	const fetch = fetchMock.sandbox();
-	fetch.post(require('../../testdata/post-module-request.json'), response);
+	const mock = fetchMock.createInstance();
+	mock.post(require('../../testdata/post-module-request.json'), response);
 
-	const api = new ValenceApi(ValenceMock, false, fetch);
+	const api = new ValenceApi(ValenceMock, false, mock.fetchHandler);
 
 	const result = await api._createModule('https://example.com/', OrgUnit, module);
 
@@ -157,9 +156,9 @@ test('_createModule returns created module (dry-run)', async t => {
 		descriptionFileName: 'test-topic/index.md'
 	};
 
-	const fetch = fetchMock.sandbox();
+	const mock = fetchMock.createInstance();
 
-	const api = new ValenceApi(ValenceMock, true, fetch);
+	const api = new ValenceApi(ValenceMock, true, mock.fetchHandler);
 
 	const result = await api._createModule('https://example.com/', OrgUnit, module);
 
@@ -180,10 +179,10 @@ test('_createModule returns created submodule', async t => {
 	};
 
 	const response = require('../../testdata/post-submodule-response.json');
-	const fetch = fetchMock.sandbox();
-	fetch.post(require('../../testdata/post-submodule-request.json'), response);
+	const mock = fetchMock.createInstance();
+	mock.post(require('../../testdata/post-submodule-request.json'), response);
 
-	const api = new ValenceApi(ValenceMock, false, fetch);
+	const api = new ValenceApi(ValenceMock, false, mock.fetchHandler);
 
 	const result = await api._createModule('https://example.com/', OrgUnit, module, TestModule);
 
@@ -203,9 +202,9 @@ test('_createModule returns created submodule (dry-run)', async t => {
 		descriptionFileName: 'test-topic/index.md'
 	};
 
-	const fetch = fetchMock.sandbox();
+	const mock = fetchMock.createInstance();
 
-	const api = new ValenceApi(ValenceMock, true, fetch);
+	const api = new ValenceApi(ValenceMock, true, mock.fetchHandler);
 
 	const result = await api._createModule('https://example.com/', OrgUnit, module, TestModule);
 
@@ -217,10 +216,10 @@ test('_createModule returns created submodule (dry-run)', async t => {
 });
 
 test('_createModule throws on HTTP error', async t => {
-	const fetch = fetchMock.sandbox();
-	fetch.post({ url: 'https://example.com/d2l/api/le/1.44/123/content/root/' }, 400);
+	const mock = fetchMock.createInstance();
+	mock.post({ url: 'https://example.com/d2l/api/le/1.44/123/content/root/' }, 400);
 
-	const api = new ValenceApi(ValenceMock, false, fetch);
+	const api = new ValenceApi(ValenceMock, false, mock.fetchHandler);
 
 	await t.throwsAsync(async () => api._createModule('https://example.com/', OrgUnit, TestModule), { instanceOf: Error, message: 'Bad Request' });
 });
@@ -252,10 +251,10 @@ test('_updateModule returns updated module', async t => {
 		parent: null
 	};
 
-	const fetch = fetchMock.sandbox();
-	fetch.put(require('../../testdata/put-module-request.json'), 200);
+	const mock = fetchMock.createInstance();
+	mock.put(require('../../testdata/put-module-request.json'), 200);
 
-	const api = new ValenceApi(ValenceMock, false, fetch);
+	const api = new ValenceApi(ValenceMock, false, mock.fetchHandler);
 
 	const result = await api._updateModule('https://example.com/', OrgUnit, { module, self });
 
@@ -289,9 +288,9 @@ test('_updateModule returns updated module (dry-run)', async t => {
 		parent: null
 	};
 
-	const fetch = fetchMock.sandbox();
+	const mock = fetchMock.createInstance();
 
-	const api = new ValenceApi(ValenceMock, true, fetch);
+	const api = new ValenceApi(ValenceMock, true, mock.fetchHandler);
 
 	const result = await api._updateModule('https://example.com/', OrgUnit, { module, self });
 
@@ -307,10 +306,10 @@ test('assertTopic calls _createTopic', async t => {
 
 	const testData = '<html></html>';
 
-	const fetch = fetchMock.sandbox();
-	fetch.get({ url: 'https://example.com/d2l/api/le/1.44/123/content/modules/1/structure/' }, { status: 200, body: [] });
+	const mock = fetchMock.createInstance();
+	mock.get({ url: 'https://example.com/d2l/api/le/1.44/123/content/modules/1/structure/' }, { status: 200, body: [] });
 
-	const api = new ValenceApi(ValenceMock, false, fetch);
+	const api = new ValenceApi(ValenceMock, false, mock.fetchHandler);
 	api._createTopic = (url, ou, { module, topic, data }) => {
 		t.is(url, 'https://example.com/');
 		t.deepEqual(ou, OrgUnit);
@@ -342,11 +341,11 @@ test('assertTopic calls _updateTopic', async t => {
 
 	const testData = '<html></html>';
 
-	const fetch = fetchMock.sandbox();
+	const mock = fetchMock.createInstance();
 	const response = require('../../testdata/get-modules-response.json');
-	fetch.get({ url: 'https://example.com/d2l/api/le/1.44/123/content/modules/1/structure/' }, response);
+	mock.get({ url: 'https://example.com/d2l/api/le/1.44/123/content/modules/1/structure/' }, response);
 
-	const api = new ValenceApi(ValenceMock, false, fetch);
+	const api = new ValenceApi(ValenceMock, false, mock.fetchHandler);
 	api._updateTopic = (url, ou, { module, self, topic }) => {
 		t.is(url, 'https://example.com/');
 		t.deepEqual(ou, OrgUnit);
@@ -376,7 +375,7 @@ test('assertTopic calls _updateTopic', async t => {
 	});
 });
 
-test('_createTopic returns created topic', async t => {
+test('_createTopic returns created topic!', async t => {
 	const topic = {
 		title: 'Test Topic',
 		type: 'topic',
@@ -385,29 +384,25 @@ test('_createTopic returns created topic', async t => {
 	};
 
 	const response = require('../../testdata/post-topic-response.json');
-	const fetch = fetchMock.sandbox();
-	fetch.post((url, options) => {
-		if (url !== 'https://example.com/d2l/api/le/1.44/123/content/modules/1/structure/') {
-			return false;
-		}
-
-		const contentType = options.headers['Content-Type'];
+	const mock = fetchMock.createInstance();
+	mock.post('https://example.com/d2l/api/le/1.44/123/content/modules/1/structure/', (request) => {
+		const contentType = request.options.headers['content-type'];
 		if (!contentType.includes('multipart/mixed; boundary=')) {
 			return false;
 		}
 
-		const boundary = options.headers['Content-Type'].match(/boundary=(?<boundary>.*?)$/).groups.boundary;
+		const boundary = contentType.match(/boundary=(?<boundary>.*?)$/).groups.boundary;
 
-		const formData = new FormData(options.body);
+		const formData = new FormData(request.options.body);
 		const body = formData.getBuffer().toString('utf-8');
-
-		return body === `--${boundary}\r\nContent-Disposition: form-data; name=""\r\nContent-Type: application/json\r\n\r\n`
+		t.is(body, `--${boundary}\r\nContent-Disposition: form-data; name=""\r\nContent-Type: application/json\r\n\r\n`
 			+ '{"Title":"Test Topic","ShortTitle":"Test Topic","Type":1,"TopicType":1,"StartDate":null,"EndDate":null,"DueDate":null,"Url":"/content/course123/test-module/test-topic.html","IsHidden":false,"IsLocked":false,"IsExempt":false}\r\n'
 			+ `--${boundary}\r\nContent-Disposition: form-data; name=""; filename="test-topic.html"\r\nContent-Type: text/html\r\n\r\n<h1></h1>\r\n`
-			+ `--${boundary}--\r\n`;
-	}, response);
+			+ `--${boundary}--\r\n`);
+		return response;
+	});
 
-	const api = new ValenceApi(ValenceMock, false, fetch);
+	const api = new ValenceApi(ValenceMock, false, mock.fetchHandler);
 
 	const result = await api._createTopic('https://example.com/', OrgUnit, { module: TestModule, topic, data: '<h1></h1>' });
 
@@ -426,30 +421,13 @@ test('_createTopic returns created topic (dry-run)', async t => {
 		isRequired: true
 	};
 
-	const response = require('../../testdata/post-topic-response.json');
-	const fetch = fetchMock.sandbox();
-	fetch.post((url, options) => {
-		if (url !== 'https://example.com/d2l/api/le/1.44/123/content/modules/1/structure/') {
-			return false;
-		}
-
-		const contentType = options.headers['Content-Type'];
-		if (!contentType.includes('multipart/mixed; boundary=')) {
-			return false;
-		}
-
-		const boundary = options.headers['Content-Type'].match(/boundary=(?<boundary>.*?)$/).groups.boundary;
-
-		return options.body === `--${boundary}\r\nContent-Disposition: form-data; name=""\r\nContent-Type: application/json\r\n\r\n`
-			+ '{"Title":"Test Topic","ShortTitle":"Test Topic","Type":1,"TopicType":1,"StartDate":null,"EndDate":null,"DueDate":null,"Url":"/content/course123/test-module/test-topic.html","IsHidden":false,"IsLocked":false,"IsExempt":false}\r\n'
-			+ `--${boundary}\r\nContent-Disposition: form-data; name=""; filename="test-topic.html"\r\nContent-Type: text/html\r\n\r\n<h1></h1>\r\n`
-			+ `--${boundary}--\r\n`;
-	}, response);
-
-	const api = new ValenceApi(ValenceMock, true, fetch);
+	const mock = fetchMock.createInstance();
+	mock.post('*', 400);
+	const api = new ValenceApi(ValenceMock, true, mock.fetchHandler);
 
 	const result = await api._createTopic('https://example.com/', OrgUnit, { module: TestModule, topic, data: '<h1></h1>' });
 
+	t.is(mock.callHistory.callLogs.length, 0);
 	t.deepEqual(result, {
 		id: 0,
 		parent: TestModule,
@@ -465,10 +443,10 @@ test('_createTopic throws on HTTP error', async t => {
 		isRequired: true
 	};
 
-	const fetch = fetchMock.sandbox();
-	fetch.post('*', 400);
+	const mock = fetchMock.createInstance();
+	mock.post('*', 400);
 
-	const api = new ValenceApi(ValenceMock, false, fetch);
+	const api = new ValenceApi(ValenceMock, false, mock.fetchHandler);
 
 	await t.throwsAsync(
 		async () => api._createTopic('https://example.com/', OrgUnit, { module: TestModule, topic, fileName: 'test-module/test-topic.html', data: '<h1></h1>' }),
@@ -499,10 +477,10 @@ test('_updateTopic returns updated topic', async t => {
 		fileName: 'test-module/test-topic.md'
 	};
 
-	const fetch = fetchMock.sandbox();
-	fetch.put(require('../../testdata/put-topic-request.json'), 200);
+	const mock = fetchMock.createInstance();
+	mock.put(require('../../testdata/put-topic-request.json'), 200);
 
-	const api = new ValenceApi(ValenceMock, false, fetch);
+	const api = new ValenceApi(ValenceMock, false, mock.fetchHandler);
 
 	const result = await api._updateTopic('https://example.com/', OrgUnit, { module: TestModule, self, topic });
 
@@ -538,10 +516,10 @@ test('_updateTopic returns updated topic (dry-run)', async t => {
 		fileName: 'test-module/test-topic.md'
 	};
 
-	const fetch = fetchMock.sandbox();
-	fetch.put(require('../../testdata/put-topic-request.json'), 200);
+	const mock = fetchMock.createInstance();
+	mock.put(require('../../testdata/put-topic-request.json'), 200);
 
-	const api = new ValenceApi(ValenceMock, true, fetch);
+	const api = new ValenceApi(ValenceMock, true, mock.fetchHandler);
 
 	const result = await api._updateTopic('https://example.com/', OrgUnit, { module: TestModule, self, topic });
 
@@ -560,12 +538,12 @@ test('assertQuiz calls _createQuizTopic', async t => {
 		type: 'quiz'
 	};
 
-	const fetch = fetchMock.sandbox();
+	const mock = fetchMock.createInstance();
 	const response = require('../../testdata/get-modules-response.json');
-	fetch.get({ url: 'https://example.com/d2l/api/le/1.44/123/content/modules/1/structure/' }, response);
-	fetch.get({ url: 'https://example.com/d2l/api/le/1.44/123/quizzes/' }, require('../../testdata/get-quizzes-response.json'));
+	mock.get({ url: 'https://example.com/d2l/api/le/1.44/123/content/modules/1/structure/' }, response);
+	mock.get({ url: 'https://example.com/d2l/api/le/1.44/123/quizzes/' }, require('../../testdata/get-quizzes-response.json'));
 
-	const api = new ValenceApi(ValenceMock, false, fetch);
+	const api = new ValenceApi(ValenceMock, false, mock.fetchHandler);
 	api._createQuizTopic = (instanceUrl, orgUnit, { module, quiz, quizItem }) => {
 		t.is(instanceUrl, 'https://example.com');
 		t.deepEqual(orgUnit, OrgUnit);
@@ -604,10 +582,10 @@ test('_createQuizTopic returns created quiz', async t => {
 		type: 'quiz'
 	};
 
-	const fetch = fetchMock.sandbox();
-	fetch.post(require('../../testdata/post-quiztopic-request.json'), require('../../testdata/post-quiztopic-response.json'));
+	const mock = fetchMock.createInstance();
+	mock.post(require('../../testdata/post-quiztopic-request.json'), require('../../testdata/post-quiztopic-response.json'));
 
-	const api = new ValenceApi(ValenceMock, false, fetch);
+	const api = new ValenceApi(ValenceMock, false, mock.fetchHandler);
 
 	const result = await api._createQuizTopic('https://example.com', OrgUnit, { module: TestModule, quiz: testQuiz, quizItem });
 
@@ -620,10 +598,10 @@ test('_createQuizTopic returns created quiz', async t => {
 
 test('whoAmI retrieves user', async t => {
 	const data = require('../../testdata/get-whoami.json');
-	const fetch = fetchMock.sandbox();
-	fetch.get({ url: 'https://example.com/d2l/api/lp/1.26/users/whoami' }, data);
+	const mock = fetchMock.createInstance();
+	mock.get({ url: 'https://example.com/d2l/api/lp/1.26/users/whoami' }, data);
 
-	const api = new ValenceApi(ValenceMock, false, fetch);
+	const api = new ValenceApi(ValenceMock, false, mock.fetchHandler);
 
 	const result = await api.whoAmI('https://example.com/', 123);
 
@@ -631,10 +609,10 @@ test('whoAmI retrieves user', async t => {
 });
 
 test('whoAmI throws on HTTP error', async t => {
-	const fetch = fetchMock.sandbox();
-	fetch.get({ url: 'https://example.com/d2l/api/lp/1.26/users/whoami' }, 404);
+	const mock = fetchMock.createInstance();
+	mock.get({ url: 'https://example.com/d2l/api/lp/1.26/users/whoami' }, 404);
 
-	const api = new ValenceApi(ValenceMock, false, fetch);
+	const api = new ValenceApi(ValenceMock, false, mock.fetchHandler);
 
 	await t.throwsAsync(async () => api.whoAmI('https://example.com/', 123), { instanceOf: Error, message: 'Not Found' });
 });

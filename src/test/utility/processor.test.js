@@ -1,10 +1,11 @@
-'use strict';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import test from 'ava';
+import Processor from '../../utility/processor.js';
+import FileHandler from '../../utility/file-handler.js';
 
-const path = require('path');
-const test = require('ava');
-
-const Processor = require('../../utility/processor');
-const FileHandler = require('../../utility/file-handler');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const ContentPath = path.join(__dirname, '..', 'content');
 

@@ -1,10 +1,7 @@
-'use strict';
-
-const test = require('ava');
-const mockFs = require('mock-fs');
-
-const LinkRewriter = require('../link-rewriter');
-const FileHandler = require('../utility/file-handler');
+import test from 'ava';
+import mockFs from 'mock-fs';
+import LinkRewriter from '../link-rewriter.js';
+import FileHandler from '../utility/file-handler.js';
 
 test.afterEach(() => {
 	mockFs.restore();
